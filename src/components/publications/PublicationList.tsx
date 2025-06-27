@@ -115,20 +115,17 @@ export const PublicationList: React.FC<PublicationListProps> = ({
                 variant={layoutType === 'grid' ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => onLayoutChange('grid')}
-                icon={Grid}
-              />
+                icon={Grid} children={undefined}              />
               <Button
                 variant={layoutType === 'list' ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => onLayoutChange('list')}
-                icon={List}
-              />
+                icon={List} children={undefined}              />
               <Button
                 variant={layoutType === 'masonry' ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => onLayoutChange('masonry')}
-                icon={Grid3X3}
-              />
+                icon={Grid3X3} children={undefined}              />
             </div>
           </div>
         </div>

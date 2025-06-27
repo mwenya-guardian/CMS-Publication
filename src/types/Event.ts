@@ -6,7 +6,7 @@ export interface Event {
   startDate: string;
   endDate?: string;
   location?: string;
-  category: 'wedding' | 'conference' | 'workshop' | 'social' | 'other';
+  category: 'wedding' | 'conference' | 'workshop' | 'social' | 'other' | 'fineral';
   featured?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -19,7 +19,7 @@ export interface CreateEventRequest {
   startDate: string;
   endDate?: string;
   location?: string;
-  category: 'wedding' | 'conference' | 'workshop' | 'social' | 'other';
+  category: 'wedding' | 'conference' | 'workshop' | 'social' | 'other' | 'fineral';
   featured?: boolean;
 }
 

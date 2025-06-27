@@ -28,7 +28,7 @@ export const Input: React.FC<InputProps> = ({
   className = '',
   rows = 4,
 }) => {
-  const baseClasses = 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200  focus:outline-none focus:ring-1 sm:text-sm p-3';
+  const baseClasses = 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200  focus:outline-none focus:ring-0 sm:text-sm p-3';
   const errorClasses = error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : '';
 
   const inputElement = type === 'textarea' ? (

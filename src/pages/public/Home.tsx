@@ -50,6 +50,70 @@ export const Home: React.FC = () => {
     };
 
     fetchFeaturedContent();
+        // This is just a placeholder to initialize the state
+    let featuredPublications: Publication[] = [];
+    let upcomingEvents: Event[] = [];
+    let featuredQuotes: QuoteType[] = [];
+    let publicationDummyData: Publication = {
+      id: '1',
+      title: 'Sample Publication',
+      content: 'This is a sample publication content. More details can be found in the full article.',
+      // imageUrl: 'https://via.placeholder.com/150',
+      date: '2023-10-01',
+      layoutType: 'grid',
+      author: "mutende the name", //?
+      tags: ["mwenya", "guardian"], //?
+      featured: true, //?
+      createdAt: "2023-10-01T00:00:00Z",
+      updatedAt: "2023-10-01T00:00:00Z"
+    }
+    let eventDummyData: Event = {
+      id: '1',
+      title: 'Sample Event',
+      description: 'This is a sample event description. More details can be found in the event page. The event will cover various topics and feature guest speakers.',
+      startDate: '2023-10-15T10:00:00Z',
+      endDate: '2023-10-15T12:00:00Z',
+      location: 'University Church',
+      // imageUrl: 'https://via.placeholder.com/150',
+      createdAt: "2023-10-01T00:00:00Z",
+      updatedAt: "2023-10-01T00:00:00Z",
+      category: 'conference',
+    }
+    /** 
+     * export interface Quote {
+       id: string;
+       text: string;
+       author: string;
+       source?: string;
+       category?: string;
+       imageUrl?: string;
+       featured?: boolean;
+       createdAt: string;
+       updatedAt: string;
+     }
+    */
+    let quoteDummyData: QuoteType = {
+      id: '1',
+      text: 'This is a sample quote. More inspirational quotes can be found in the quotes section. The quote aims to inspire and motivate readers.',
+      author: 'john doe',
+      createdAt: '2023-10-01T00:00:00Z',
+      updatedAt: '2023-10-01T00:00:00Z',
+    }
+    upcomingEvents.push(eventDummyData);
+    featuredQuotes.push(quoteDummyData);
+    featuredPublications.push(publicationDummyData);
+        upcomingEvents.push(eventDummyData);
+    featuredQuotes.push(quoteDummyData);
+    featuredPublications.push(publicationDummyData);
+        upcomingEvents.push(eventDummyData);
+    featuredQuotes.push(quoteDummyData);
+    featuredPublications.push(publicationDummyData);
+        upcomingEvents.push(eventDummyData);
+    featuredQuotes.push(quoteDummyData);
+    featuredPublications.push(publicationDummyData);
+    setFeaturedPublications(featuredPublications);
+    setUpcomingEvents(upcomingEvents);
+    setFeaturedQuotes(featuredQuotes);
   }, []);
 
   const HeroSection = () => (
@@ -123,7 +187,62 @@ export const Home: React.FC = () => {
       </div>
     );
   }
-
+  //initializing featured publications, upcoming events, and featured quotes
+  // useEffect(() => {
+  //   // This is just a placeholder to initialize the state
+  //   let featuredPublications: Publication[] = [];
+  //   let upcomingEvents: Event[] = [];
+  //   let featuredQuotes: QuoteType[] = [];
+  //   let publicationDummyData: Publication = {
+  //     id: '1',
+  //     title: 'Sample Publication',
+  //     content: 'This is a sample publication content.',
+  //     imageUrl: 'https://via.placeholder.com/150',
+  //     date: '2023-10-01',
+  //     layoutType: 'grid',
+  //     author: "mutende", //?
+  //     tags: ["mwenya", "guardian"], //?
+  //     featured: true, //?
+  //     createdAt: "2023-10-01T00:00:00Z",
+  //     updatedAt: "2023-10-01T00:00:00Z"
+  //   }
+  //   let eventDummyData: Event = {
+  //     id: '1',
+  //     title: 'Sample Event',
+  //     description: 'This is a sample event description.',
+  //     startDate: '2023-10-15T10:00:00Z',
+  //     endDate: '2023-10-15T12:00:00Z',
+  //     location: 'Online',
+  //     imageUrl: 'https://via.placeholder.com/150',
+  //     createdAt: "2023-10-01T00:00:00Z",
+  //     updatedAt: "2023-10-01T00:00:00Z",
+  //     category: 'conference',
+  //   }
+  //   /** 
+  //    * export interface Quote {
+  //      id: string;
+  //      text: string;
+  //      author: string;
+  //      source?: string;
+  //      category?: string;
+  //      imageUrl?: string;
+  //      featured?: boolean;
+  //      createdAt: string;
+  //      updatedAt: string;
+  //    }
+  //   */
+  //   let quoteDummyData: QuoteType = {
+  //     id: '1',
+  //     text: 'This is a sample quote.',
+  //     author: 'john doe',
+  //     createdAt: '2023-10-01T00:00:00Z',
+  //     updatedAt: '2023-10-01T00:00:00Z',
+  //   }
+  //   upcomingEvents.push(eventDummyData);
+  //   featuredQuotes.push(quoteDummyData);
+  //   featuredPublications.push(publicationDummyData);
+  //   setFeaturedPublications(featuredPublications);
+  // }, []);
   return (
     <div>
       <HeroSection />
@@ -212,14 +331,17 @@ export const Home: React.FC = () => {
             Subscribe to our newsletter to get the latest updates on new publications, events, and inspiring content.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+            <form className="flex w-full">
             <input
               type="email"
               placeholder="Enter your email"
+              required
               className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
             />
-            <Button variant="accent" size="lg">
+            <Button variant="accent" size="lg"  className="ml-2" type='submit'>
               Subscribe
             </Button>
+            </form>
           </div>
         </div>
       </div>

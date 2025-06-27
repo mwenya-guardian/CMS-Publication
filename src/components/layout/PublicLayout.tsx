@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Calendar, Quote, Menu, X } from 'lucide-react';
+import { Home, FileText, Calendar, Quote, Menu, X, CircleUserRoundIcon} from 'lucide-react';
 import { useState } from 'react';
 
 const navigation = [
@@ -21,6 +21,9 @@ export const PublicLayout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
+              <Link to="/auth/login" className="flex-shrink-0 border-r-1 border-primary-1 pr-4">
+                <CircleUserRoundIcon className="h-8 w-8 text-primary-600 border-r-20" />
+              </Link>
               <Link to="/" className="flex-shrink-0">
                 <h1 className="text-2xl font-bold text-primary-600">CMS</h1>
               </Link>
