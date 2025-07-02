@@ -95,8 +95,8 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
               </div>
               {isAdmin && (
                 <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit} icon={Edit} children={undefined} />
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete} icon={Trash2} children={undefined} />
+                  <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
+                  <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
                 </div>
               )}
             </div>
@@ -127,8 +127,8 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
           </div>
           {isAdmin && (
             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit} icon={Edit} children={undefined} />
-              <Button variant="ghost" size="sm" onClick={() => handleDelete} icon={Trash2} children={undefined} />
+              <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
+              <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
             </div>
           )}
         </div>

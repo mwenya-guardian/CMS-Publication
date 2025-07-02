@@ -33,7 +33,7 @@ export const EventsView: React.FC = () => {
     try {
       setIsLoading(true);
       const data = await eventService.getAll();
-      setEvents(data);
+      setEvents(data?data:[]);
     } catch (error) {
       console.error('Failed to fetch events:', error);
     } finally {
@@ -142,10 +142,10 @@ export const EventsView: React.FC = () => {
   );
 
   const StatsBar = () => {
-    const totalEvents = events.length;
-    const filteredCount = filteredEvents.length;
-    const upcomingCount = events.filter(e => new Date(e.startDate) > new Date()).length;
-    const featuredCount = events.filter(e => e.featured).length;
+    const totalEvents = events?.length;
+    const filteredCount = filteredEvents?.length;
+    const upcomingCount = events?.filter(e => new Date(e.startDate) > new Date()).length;
+    const featuredCount = events?.filter(e => e.featured).length;
 
     return (
       <div className="bg-white border-b border-gray-200">

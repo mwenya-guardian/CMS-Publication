@@ -110,14 +110,12 @@ export const EventList: React.FC<EventListProps> = ({
                 variant={layoutType === 'grid' ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => onLayoutChange('grid')}
-                icon={Grid}
-              />
+                icon={Grid} children={undefined}              />
               <Button
                 variant={layoutType === 'list' ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => onLayoutChange('list')}
-                icon={List}
-              />
+                icon={List} children={undefined}              />
             </div>
           </div>
         </div>

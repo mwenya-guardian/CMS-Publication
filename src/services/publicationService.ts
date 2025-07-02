@@ -26,7 +26,9 @@ export const publicationService = {
   },
 
   async create(publication: CreatePublicationRequest): Promise<Publication> {
+    console.log("Publication: ", publication);
     const response = await api.post<ApiResponse<Publication>>('/publications', publication);
+    console.log("P, Response: ", response.data);
     return response.data.data;
   },
 

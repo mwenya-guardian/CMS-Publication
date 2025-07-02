@@ -21,7 +21,9 @@ export const quoteService = {
   },
 
   async create(quote: CreateQuoteRequest): Promise<Quote> {
+    console.log("Qoute", quote);
     const response = await api.post<ApiResponse<Quote>>('/quotes', quote);
+    console.log("Q, Response: ", response.data);
     return response.data.data;
   },
 

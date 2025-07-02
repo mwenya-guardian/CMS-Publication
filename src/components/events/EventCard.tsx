@@ -24,6 +24,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   className = '',
 }) => {
   const handleEdit = (e: React.MouseEvent) => {
+    console.log("Handle edit", event);
     e.stopPropagation();
     onEdit?.(event);
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Event, CreateEventRequest, UpdateEventRequest } from '../../types/Event';
+import { Event, CreateEventRequest, UpdateEventRequest, Category , CategoryValues} from '../../types/Event';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';
@@ -23,10 +23,10 @@ export const EventForm: React.FC<EventFormProps> = ({
     title: '',
     description: '',
     imageUrl: '',
-    startDate: new Date().toISOString().split('T')[0],
+    startDate: new Date().toISOString().slice(0, 10),
     endDate: '',
     location: '',
-    category: 'other' as 'wedding' | 'conference' | 'workshop' | 'social' | 'other',
+    category: 'OTHER' as Category,
     featured: false,
   });
 
@@ -36,8 +36,8 @@ export const EventForm: React.FC<EventFormProps> = ({
         title: event.title,
         description: event.description,
         imageUrl: event.imageUrl || '',
-        startDate: event.startDate.split('T')[0],
-        endDate: event.endDate?.split('T')[0] || '',
+        startDate: event.startDate.slice(0, 10),
+        endDate: event.endDate?.slice(0, 10) || '',
         location: event.location || '',
         category: event.category,
         featured: event.featured || false,
@@ -60,6 +60,7 @@ export const EventForm: React.FC<EventFormProps> = ({
     };
 
     if (event) {
+      console.log("Sumbitted Event: ", event.id)
       await onSubmit({ ...submitData, id: event.id });
     } else {
       await onSubmit(submitData);
@@ -70,13 +71,9 @@ export const EventForm: React.FC<EventFormProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const categoryOptions = [
-    { value: 'wedding', label: 'Wedding' },
-    { value: 'conference', label: 'Conference' },
-    { value: 'workshop', label: 'Workshop' },
-    { value: 'social', label: 'Social' },
-    { value: 'other', label: 'Other' },
-  ];
+  const categoryOptions = Object.values(CategoryValues).map((value)=>{
+    return { value: value, label: String(value).charAt(0) + String(value).slice(1).toLowerCase()}
+  })
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,7 +102,7 @@ export const EventForm: React.FC<EventFormProps> = ({
 
         <Input
           label="Start Date"
-          type="date"
+          type="datetime-local"
           value={formData.startDate}
           onChange={(value) => handleInputChange('startDate', value)}
           required
@@ -113,9 +110,14 @@ export const EventForm: React.FC<EventFormProps> = ({
 
         <Input
           label="End Date (Optional)"
-          type="date"
+          type="datetime-local"
           value={formData.endDate}
           onChange={(value) => handleInputChange('endDate', value)}
+          
+          {...(formData.endDate && formData.endDate < formData.startDate
+              ? { error: "End date must be after start date" }
+            : {})
+          }
         />
 
         <Input

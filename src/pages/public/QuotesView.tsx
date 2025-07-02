@@ -33,7 +33,7 @@ export const QuotesView: React.FC = () => {
     try {
       setIsLoading(true);
       const data = await quoteService.getAll();
-      setQuotes(data);
+      setQuotes(data? data : []);
     } catch (error) {
       console.error('Failed to fetch quotes:', error);
     } finally {
@@ -142,10 +142,10 @@ export const QuotesView: React.FC = () => {
   );
 
   const StatsBar = () => {
-    const totalQuotes = quotes.length;
-    const filteredCount = filteredQuotes.length;
-    const featuredCount = quotes.filter(q => q.featured).length;
-    const uniqueAuthors = new Set(quotes.map(q => q.author)).size;
+    const totalQuotes = quotes?.length;
+    const filteredCount = filteredQuotes?.length;
+    const featuredCount = quotes?.filter(q => q.featured).length;
+    const uniqueAuthors = new Set(quotes?.map(q => q.author)).size;
 
     return (
       <div className="bg-white border-b border-gray-200">

@@ -21,7 +21,9 @@ export const eventService = {
   },
 
   async create(event: CreateEventRequest): Promise<Event> {
+    console.log("Event to be created: ", event);
     const response = await api.post<ApiResponse<Event>>('/events', event);
+    console.log("E, Response: ", response.data);
     return response.data.data;
   },
 

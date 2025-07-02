@@ -23,8 +23,8 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
     title: '',
     content: '',
     imageUrl: '',
-    date: new Date().toISOString().split('T')[0],
-    layoutType: 'grid' as 'grid' | 'list' | 'masonry',
+    date: new Date().toISOString().slice(0, 10),
+    layoutType: 'grid' as 'grid' | 'list' | 'masonry' | 'GRID' | 'LIST' | 'MASONRY',
     author: '',
     tags: '',
     featured: false,
@@ -36,8 +36,8 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
         title: publication.title,
         content: publication.content,
         imageUrl: publication.imageUrl || '',
-        date: publication.date.split('T')[0],
-        layoutType: publication.layoutType,
+        date: publication.date.slice(0, 10),
+        layoutType: publication.layoutType.toUpperCase() as 'grid' | 'list' | 'masonry' | 'GRID' | 'LIST' | 'MASONRY',
         author: publication.author || '',
         tags: publication.tags?.join(', ') || '',
         featured: publication.featured || false,
@@ -103,7 +103,7 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
 
         <Input
           label="Date"
-          type="date"
+          type="datetime-local"
           value={formData.date}
           onChange={(value) => handleInputChange('date', value)}
           required

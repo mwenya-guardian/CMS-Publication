@@ -4,7 +4,7 @@ export interface Publication {
   content: string;
   imageUrl?: string;
   date: string;
-  layoutType: 'grid' | 'list' | 'masonry';
+  layoutType: 'grid' | 'list' | 'masonry' | 'GRID' | 'LIST' | 'MASONRY';
   author?: string;
   tags?: string[];
   featured?: boolean;
@@ -17,7 +17,7 @@ export interface CreatePublicationRequest {
   content: string;
   imageUrl?: string;
   date: string;
-  layoutType: 'grid' | 'list' | 'masonry';
+  layoutType: 'grid' | 'list' | 'masonry' | 'GRID' | 'LIST' | 'MASONRY';
   author?: string;
   tags?: string[];
   featured?: boolean;

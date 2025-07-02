@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react';
 
 interface InputProps {
   label?: string;
-  type?: 'text' | 'email' | 'password' | 'number' | 'date' | 'textarea';
+  type?: 'text' | 'email' | 'password' | 'number' | 'date' | 'textarea' | 'datetime-local';
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;

@@ -4,6 +4,7 @@ import { ApiResponse } from '../types/Common';
 
 export const authService = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
+    console.log(api.getUri());
     const response = await api.post<ApiResponse<LoginResponse>>('/auth/login', credentials);
     return response.data.data;
   },

@@ -35,7 +35,7 @@ export const PublicationsView: React.FC = () => {
     try {
       setIsLoading(true);
       const data = await publicationService.getAll();
-      setPublications(data);
+      setPublications(data?data:[]);
     } catch (error) {
       console.error('Failed to fetch publications:', error);
     } finally {
@@ -148,11 +148,11 @@ export const PublicationsView: React.FC = () => {
   );
 
   const StatsBar = () => {
-    const totalPublications = publications.length;
-    const filteredCount = filteredPublications.length;
-    const featuredCount = publications.filter(p => p.featured).length;
+    const totalPublications = publications?.length;
+    const filteredCount = filteredPublications?.length;
+    const featuredCount = publications?.filter(p => p.featured).length;
     const currentYear = dateUtils.getCurrentYear();
-    const thisYearCount = publications.filter(p => 
+    const thisYearCount = publications?.filter(p => 
       new Date(p.date).getFullYear() === currentYear
     ).length;
 

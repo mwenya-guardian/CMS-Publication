@@ -84,6 +84,7 @@ export const PublicationsPage: React.FC = () => {
   };
 
   const handleEdit = (publication: Publication) => {
+    console.log("In Page: ", publication);
     setSelectedPublication(publication);
     setIsFormModalOpen(true);
   };
@@ -100,7 +101,7 @@ export const PublicationsPage: React.FC = () => {
   };
 
   const handleFormSubmit = async (data: any) => {
-    try {
+    try { 
       setIsSubmitting(true);
       if (selectedPublication) {
         await publicationService.update(data);
