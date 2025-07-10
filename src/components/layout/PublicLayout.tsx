@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Calendar, Quote, Menu, X, CircleUserRoundIcon} from 'lucide-react';
+import { Home, FileText, Calendar, Quote, BookOpen ,Menu, X, CircleUserRoundIcon} from 'lucide-react';
 import { useState } from 'react';
 
 const navigation = [
@@ -8,6 +8,7 @@ const navigation = [
   { name: 'Publications', href: '/publications', icon: FileText },
   { name: 'Events', href: '/events', icon: Calendar },
   { name: 'Quotes', href: '/quotes', icon: Quote },
+  { name: 'Bulletins', href: '/bulletins', icon: BookOpen },
 ];
 
 export const PublicLayout: React.FC = () => {

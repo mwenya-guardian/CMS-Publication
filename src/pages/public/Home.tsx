@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileText, Calendar, Quote, Star } from 'lucide-react';
+import { ArrowRight, FileText, Calendar, Quote, Star, BookOpen } from 'lucide-react';
 import { Publication } from '../../types/Publication';
 import { Event } from '../../types/Event';
 import { Quote as QuoteType } from '../../types/Quote';
@@ -12,12 +12,16 @@ import { EventCard } from '../../components/events/EventCard';
 import { QuoteCard } from '../../components/quotes/QuoteCard';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { bulletinService } from '../../services/bulletinService';
+import { ChurchBulletin } from '../../types/ChurchBulletin';
+import { BulletinCard } from '../../components/bulletin/BulletinCard';
 
 export const Home: React.FC = () => {
   const [featuredPublications, setFeaturedPublications] = useState<Publication[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [featuredQuotes, setFeaturedQuotes] = useState<QuoteType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [latestBulletins, setLatestBulletins] = useState<ChurchBulletin[]>([]);
 
   useEffect(() => {
     const fetchFeaturedContent = async () => {
@@ -77,7 +81,7 @@ export const Home: React.FC = () => {
       // imageUrl: 'https://via.placeholder.com/150',
       createdAt: "2023-10-01T00:00:00Z",
       updatedAt: "2023-10-01T00:00:00Z",
-      category: 'conference',
+      category: 'CONFERENCE',
     }
     /** 
      * export interface Quote {
@@ -321,7 +325,31 @@ export const Home: React.FC = () => {
             </div>
           </FeaturedSection>
         )}
+
+      {/* Latest Bulletins */}
+        {latestBulletins.length > 0 && (
+          <div className="bg-white">
+            <FeaturedSection
+              title="Latest Church Bulletins"
+              description="Stay updated with our weekly church bulletins and worship schedules"
+              icon={BookOpen}
+              viewAllLink="/bulletins"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {latestBulletins.map((bulletin) => (
+                  <BulletinCard
+                    key={bulletin.id}
+                    bulletin={bulletin}
+                    onView={() => {}}
+                    onDownloadPdf={() => {}}
+                  />
+                ))}
+              </div>
+            </FeaturedSection>
+          </div>
+        )}
       </div>
+  
 
       {/* Call to Action */}
       <div className="bg-primary-600 text-white py-16">

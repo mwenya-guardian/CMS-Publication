@@ -8,6 +8,7 @@ import {
   Calendar, 
   Quote, 
   Settings, 
+  BookOpen,
   LogOut,
   User,
   Bell
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Publications', href: '/admin/publications', icon: FileText },
   { name: 'Events', href: '/admin/events', icon: Calendar },
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
+  { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
 ];
 
 export const AdminLayout: React.FC = () => {
