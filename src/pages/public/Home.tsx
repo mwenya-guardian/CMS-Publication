@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileText, Calendar, Quote, Star, BookOpen } from 'lucide-react';
+import { ArrowRight, FileText, Calendar, Quote, Star, BookOpen, MapPin, Phone, Mail, Globe  } from 'lucide-react';
+import { mockChurchDetails, mockPastoralTeam } from '../../data/mockData';
 import { Publication } from '../../types/Publication';
 import { Event } from '../../types/Event';
 import { Quote as QuoteType } from '../../types/Quote';
@@ -12,9 +13,10 @@ import { EventCard } from '../../components/events/EventCard';
 import { QuoteCard } from '../../components/quotes/QuoteCard';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { bulletinService } from '../../services/bulletinService';
+// import { bulletinService } from '../../services/bulletinService';
 import { ChurchBulletin } from '../../types/ChurchBulletin';
 import { BulletinCard } from '../../components/bulletin/BulletinCard';
+import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 
 export const Home: React.FC = () => {
   const [featuredPublications, setFeaturedPublications] = useState<Publication[]>([]);
@@ -55,101 +57,113 @@ export const Home: React.FC = () => {
 
     fetchFeaturedContent();
         // This is just a placeholder to initialize the state
-    let featuredPublications: Publication[] = [];
-    let upcomingEvents: Event[] = [];
-    let featuredQuotes: QuoteType[] = [];
-    let publicationDummyData: Publication = {
-      id: '1',
-      title: 'Sample Publication',
-      content: 'This is a sample publication content. More details can be found in the full article.',
-      // imageUrl: 'https://via.placeholder.com/150',
-      date: '2023-10-01',
-      layoutType: 'grid',
-      author: "mutende the name", //?
-      tags: ["mwenya", "guardian"], //?
-      featured: true, //?
-      createdAt: "2023-10-01T00:00:00Z",
-      updatedAt: "2023-10-01T00:00:00Z"
-    }
-    let eventDummyData: Event = {
-      id: '1',
-      title: 'Sample Event',
-      description: 'This is a sample event description. More details can be found in the event page. The event will cover various topics and feature guest speakers.',
-      startDate: '2023-10-15T10:00:00Z',
-      endDate: '2023-10-15T12:00:00Z',
-      location: 'University Church',
-      // imageUrl: 'https://via.placeholder.com/150',
-      createdAt: "2023-10-01T00:00:00Z",
-      updatedAt: "2023-10-01T00:00:00Z",
-      category: 'CONFERENCE',
-    }
-    /** 
-     * export interface Quote {
-       id: string;
-       text: string;
-       author: string;
-       source?: string;
-       category?: string;
-       imageUrl?: string;
-       featured?: boolean;
-       createdAt: string;
-       updatedAt: string;
-     }
-    */
-    let quoteDummyData: QuoteType = {
-      id: '1',
-      text: 'This is a sample quote. More inspirational quotes can be found in the quotes section. The quote aims to inspire and motivate readers.',
-      author: 'john doe',
-      createdAt: '2023-10-01T00:00:00Z',
-      updatedAt: '2023-10-01T00:00:00Z',
-    }
-    upcomingEvents.push(eventDummyData);
-    featuredQuotes.push(quoteDummyData);
-    featuredPublications.push(publicationDummyData);
-        upcomingEvents.push(eventDummyData);
-    featuredQuotes.push(quoteDummyData);
-    featuredPublications.push(publicationDummyData);
-        upcomingEvents.push(eventDummyData);
-    featuredQuotes.push(quoteDummyData);
-    featuredPublications.push(publicationDummyData);
-        upcomingEvents.push(eventDummyData);
-    featuredQuotes.push(quoteDummyData);
-    featuredPublications.push(publicationDummyData);
-    setFeaturedPublications(featuredPublications);
-    setUpcomingEvents(upcomingEvents);
-    setFeaturedQuotes(featuredQuotes);
+    // let featuredPublications: Publication[] = [];
+    // let upcomingEvents: Event[] = [];
+    // let featuredQuotes: QuoteType[] = [];
+    // let publicationDummyData: Publication = {
+    //   id: '1',
+    //   title: 'Sample Publication',
+    //   content: 'This is a sample publication content. More details can be found in the full article.',
+    //   // imageUrl: 'https://via.placeholder.com/150',
+    //   date: '2023-10-01',
+    //   layoutType: 'grid',
+    //   author: "mutende the name", //?
+    //   tags: ["mwenya", "guardian"], //?
+    //   featured: true, //?
+    //   createdAt: "2023-10-01T00:00:00Z",
+    //   updatedAt: "2023-10-01T00:00:00Z"
+    // }
+    // let eventDummyData: Event = {
+    //   id: '1',
+    //   title: 'Sample Event',
+    //   description: 'This is a sample event description. More details can be found in the event page. The event will cover various topics and feature guest speakers.',
+    //   startDate: '2023-10-15T10:00:00Z',
+    //   endDate: '2023-10-15T12:00:00Z',
+    //   location: 'University Church',
+    //   // imageUrl: 'https://via.placeholder.com/150',
+    //   createdAt: "2023-10-01T00:00:00Z",
+    //   updatedAt: "2023-10-01T00:00:00Z",
+    //   category: 'CONFERENCE',
+    // }
+    // /** 
+    //  * export interface Quote {
+    //    id: string;
+    //    text: string;
+    //    author: string;
+    //    source?: string;
+    //    category?: string;
+    //    imageUrl?: string;
+    //    featured?: boolean;
+    //    createdAt: string;
+    //    updatedAt: string;
+    //  }
+    // */
+    // let quoteDummyData: QuoteType = {
+    //   id: '1',
+    //   text: 'This is a sample quote. More inspirational quotes can be found in the quotes section. The quote aims to inspire and motivate readers.',
+    //   author: 'john doe',
+    //   createdAt: '2023-10-01T00:00:00Z',
+    //   updatedAt: '2023-10-01T00:00:00Z',
+    // }
+    // upcomingEvents.push(eventDummyData);
+    // featuredQuotes.push(quoteDummyData);
+    // featuredPublications.push(publicationDummyData);
+    //     upcomingEvents.push(eventDummyData);
+    // featuredQuotes.push(quoteDummyData);
+    // featuredPublications.push(publicationDummyData);
+    //     upcomingEvents.push(eventDummyData);
+    // featuredQuotes.push(quoteDummyData);
+    // featuredPublications.push(publicationDummyData);
+    // //     upcomingEvents.push(eventDummyData);
+    // // featuredQuotes.push(quoteDummyData);
+    // // featuredPublications.push(publicationDummyData);
+    // setFeaturedPublications(featuredPublications);
+    // setUpcomingEvents(upcomingEvents);
+    // setFeaturedQuotes(featuredQuotes);
   }, []);
 
   const HeroSection = () => (
-    <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 overflow-hidden">
-      <div className="absolute inset-0 bg-black/20"></div>
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Welcome to Our
-            <span className="block text-accent-300">Content Hub</span>
-          </h1>
-          <p className="text-xl text-primary-100 mb-8 max-w-3xl mx-auto">
-            Discover our latest publications, upcoming events, and inspiring quotes. 
-            Stay connected with content that matters to you.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              variant="accent"
-              size="lg"
-              onClick={() => document.getElementById('featured-content')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              Explore Content
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Link to="/publications">
-              <Button variant="outline" size="lg" className="text-white border-white hover:bg-white hover:text-primary-600">
-                View All Publications
-              </Button>
-            </Link>
+    <div className="space-y-8">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-900 to-blue-600 text-white rounded-lg p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center">
+              {/* <img src={sdalogo} alt="SDA Logo" className="w-10 h-10 mb-4" /> */}
+            </div>
           </div>
+        <h1 className="text-4xl font-bold mb-4">{mockChurchDetails.name}</h1>
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <MapPin className="w-5 h-5" />
+          <span className="text-blue-100">{mockChurchDetails.address}</span>
+        </div>
+        <p className="text-xl mb-4">{mockChurchDetails.greeting}</p>
+        <p className="text-blue-100">{mockChurchDetails.message}</p>
+      </div>
+
+      {/* Welcome Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Welcome Message</h2>
+        <div className="prose max-w-none">
+          <p className="text-gray-700 mb-4">
+            Welcome to our church family! We are delighted to have you join us in worship and fellowship. 
+            Our church is a place where all are welcome to experience God's love, grow in faith, and serve our community.
+          </p>
+          <p className="text-gray-700 mb-4">
+            Whether you're a longtime member or visiting for the first time, we invite you to participate 
+            in our various ministries and activities designed to strengthen your spiritual journey.
+          </p>
         </div>
       </div>
+
+      {/* Mission Statement */}
+      <div className="bg-blue-100 rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Our Mission</h2>
+        <p className="text-gray-700 text-lg">
+          To make disciples of Jesus Christ for the transformation of the world through worship, 
+          fellowship, spiritual growth, and service to others in our community and beyond.
+        </p>
+      </div>
+
     </div>
   );
 
@@ -160,9 +174,9 @@ export const Home: React.FC = () => {
     viewAllLink: string;
     children: React.ReactNode;
   }> = ({ title, description, icon: Icon, viewAllLink, children }) => (
-    <div className="py-16">
+    <div className="py-5 rounded-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-5">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-primary-100 rounded-full">
               <Icon className="h-8 w-8 text-primary-600" />
@@ -248,7 +262,7 @@ export const Home: React.FC = () => {
   //   setFeaturedPublications(featuredPublications);
   // }, []);
   return (
-    <div>
+    <div className='p-2'>
       <HeroSection />
       
       <div id="featured-content" className="bg-gray-50">
@@ -350,27 +364,21 @@ export const Home: React.FC = () => {
         )}
       </div>
   
-
-      {/* Call to Action */}
-      <div className="bg-primary-600 text-white py-16">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Subscribe to our newsletter to get the latest updates on new publications, events, and inspiring content.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <form className="flex w-full">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              required
-              className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
-            />
-            <Button variant="accent" size="lg"  className="ml-2" type='submit'>
-              Subscribe
-            </Button>
-            </form>
-          </div>
+        {/* Newsletter Signup */}
+        <div className="bg-gradient-to-r from-blue-800 to-blue-700 text-white rounded-lg p-6 mt-5">
+        <h2 className="text-2xl font-bold mb-4">Stay Connected</h2>
+        <p className="text-blue-100 mb-6">
+          Subscribe to our newsletter to receive updates about events, announcements, and church news.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <input
+            type="email"
+            placeholder="Enter your email address"
+            className="flex-1 px-4 py-2 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+          <button className="bg-blue-800 hover:bg-blue-600 px-6 py-2 rounded-md font-medium transition-colors">
+            Subscribe
+          </button>
         </div>
       </div>
     </div>

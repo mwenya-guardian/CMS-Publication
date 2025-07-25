@@ -10,9 +10,9 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    await api.post('/auth/logout');
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    await api.post('/auth/logout');
   },
 
   async getCurrentUser(): Promise<User> {

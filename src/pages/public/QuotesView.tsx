@@ -113,8 +113,9 @@ export const QuotesView: React.FC = () => {
             Quotes
           </h1>
           <p className="text-xl text-accent-100 mb-8 max-w-3xl mx-auto">
-            Find inspiration in words of wisdom from great minds throughout history. 
-            Discover quotes that motivate, inspire, and enlighten.
+            Find inspiration in words of wisdom from the bible and other great sources
+            <br />
+            based on scripture
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
             <div className="relative flex-1">

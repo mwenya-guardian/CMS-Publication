@@ -11,6 +11,7 @@ import { PublicationsView } from './pages/public/PublicationsView';
 import { EventsView } from './pages/public/EventsView';
 import { QuotesView } from './pages/public/QuotesView';
 import { BulletinsView } from './pages/public/BulletinsView';
+import { AboutView } from './pages/public/AboutView';
 
 // Admin Pages
 import { Dashboard } from './pages/admin/Dashboard';
@@ -34,6 +35,7 @@ function App() {
             <Route path="events" element={<EventsView />} />
             <Route path="quotes" element={<QuotesView />} />
             <Route path="bulletins" element={<BulletinsView />} />
+            <Route path="about" element={<AboutView />} />
           </Route>
 
           {/* Auth Routes */}

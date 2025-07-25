@@ -119,8 +119,9 @@ export const PublicationsView: React.FC = () => {
             Publications
           </h1>
           <p className="text-xl text-primary-100 mb-8 max-w-3xl mx-auto">
-            Explore our collection of articles, research papers, and thought-provoking content. 
-            Discover insights that matter to you.
+            Explore what the church is doing and what is happening in the church
+            <br />
+            See the church's goals and objectives
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
             <div className="relative flex-1">
