@@ -5,6 +5,7 @@ import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { ImageUploader } from '../common/ImageUploader';
 import { Save, X } from 'lucide-react';
+import { quoteService } from '../../services/quoteService';
 
 interface QuoteFormProps {
   quote?: Quote;
@@ -134,6 +135,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             value={formData.imageUrl}
             onChange={(url) => handleInputChange('imageUrl', url)}
             onRemove={() => handleInputChange('imageUrl', '')}
+            onUpload={quoteService.uploadImage}
           />
         </div>
       </div>

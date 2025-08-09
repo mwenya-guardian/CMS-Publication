@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChurchBulletin, ServiceSchedule, Announcement, Contact, Department, PrayerLine, DutyScheduleEntry } from '../../types/ChurchBulletin';
-import { BulletinValidator, ValidationError } from '../../utils/bulletinValidation';
+import { ChurchBulletin, PublicationStatus, Schedule, Announcement, OnDuty, Cover } from '../../types/ChurchBulletin';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
-import { Modal } from '../common/Modal';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { ScheduleModal } from './ScheduleModal';
 import { AnnouncementModal } from './AnnouncementModal';
-import { ContactModal } from './ContactModal';
-import { DutyScheduleModal } from './DutyScheduleModal';
+import { OnDutyModal } from './OnDutyModal';
 import { 
   Save, 
   Eye, 
@@ -17,7 +15,10 @@ import {
   MessageSquare, 
   Settings,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Plus,
+  Trash2,
+  Edit
 } from 'lucide-react';
 
 interface BulletinEditorProps {
@@ -33,25 +34,24 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
   onCancel,
   isLoading = false
 }) => {
-    const [formData, setFormData] = useState<Partial<ChurchBulletin>>({});
-    const [activeTab, setActiveTab] = useState<string>('cover');
-    const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-    const [isValidating, setIsValidating] = useState(false);
-    const [previewMode, setPreviewMode] = useState(false);
-    
-    // Modal states
-    const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
-    const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
-    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-    const [isDutyModalOpen, setIsDutyModalOpen] = useState(false);
-    
-    // Selected items for editing
-    const [selectedService, setSelectedService] = useState<ServiceSchedule | undefined>();
-    const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | undefined>();
-    const [selectedContact, setSelectedContact] = useState<Contact | Department | PrayerLine | undefined>();
-    const [selectedDutyEntry, setSelectedDutyEntry] = useState<DutyScheduleEntry | undefined>();
-    const [contactType, setContactType] = useState<'contact' | 'department' | 'prayerLine'>('contact');
+  const [formData, setFormData] = useState<Partial<ChurchBulletin>>({});
+  const [activeTab, setActiveTab] = useState<string>('basic');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
+  // Modal states
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
+  const [isOnDutyModalOpen, setIsOnDutyModalOpen] = useState(false);
+  
+  // Selected items for editing
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | undefined>();
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | undefined>();
+  const [selectedOnDuty, setSelectedOnDuty] = useState<OnDuty | undefined>();
+  
+  // Selected indices for editing
+  const [selectedScheduleIndex, setSelectedScheduleIndex] = useState<number | undefined>();
+  const [selectedAnnouncementIndex, setSelectedAnnouncementIndex] = useState<number | undefined>();
+  const [selectedOnDutyIndex, setSelectedOnDutyIndex] = useState<number | undefined>();
 
   useEffect(() => {
     if (bulletin) {
@@ -59,367 +59,495 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
     } else {
       // Initialize with default structure
       setFormData({
+        title: '',
         bulletinDate: new Date().toISOString().split('T')[0],
-        status: 'draft',
-        churchInfo: {
-          name: '',
-          address: '',
-          phone: '',
-          email: '',
-          website: ''
-        },
-        coverContent: {
-          bulletinTitle: 'Church Bulletin',
-          motto: 'More Like Jesus – HAPPY SABBATH',
+        content: '',
+        status: PublicationStatus.DRAFT,
+        cover: {
+          documentName: 'Church Bulletin',
           welcomeMessage: '',
-          pastors: []
+          footerMessage: ''
         },
-        services: [],
+        schedules: [],
         announcements: [],
-        dutySchedule: [],
-        faithPrinciples: [],
-        contacts: {
-          pastors: [],
-          departments: [],
-          prayerLines: []
-        }
+        onDutyList: []
       });
     }
   }, [bulletin]);
 
-  const handleValidation = async () => {
-    setIsValidating(true);
-    const errors = BulletinValidator.validate(formData);
-    setValidationErrors(errors);
-    setIsValidating(false);
-    return errors.filter(e => e.severity === 'error').length === 0;
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title?.trim()) {
+      newErrors.title = 'Title is required';
+    }
+
+    if (!formData.bulletinDate) {
+      newErrors.bulletinDate = 'Bulletin date is required';
+    }
+
+    if (!formData.content?.trim()) {
+      newErrors.content = 'Content is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
-    const isValid = await handleValidation();
-    if (isValid) {
+    if (validateForm()) {
       await onSave(formData);
     }
   };
 
-  const handleFieldChange = (path: string, value: any) => {
-    setFormData(prev => {
-      const newData = { ...prev };
-      const keys = path.split('.');
-      let current = newData as any;
-      
-      for (let i = 0; i < keys.length - 1; i++) {
-        if (!current[keys[i]]) {
-          current[keys[i]] = {};
-        }
-        current = current[keys[i]];
-      }
-      
-      current[keys[keys.length - 1]] = value;
-      return newData;
-    });
+  const handleFieldChange = (field: keyof ChurchBulletin, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field as string]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
-  const tabs = [
-    { id: 'cover', label: 'Cover & Welcome', icon: FileText },
-    { id: 'services', label: 'Services', icon: Calendar },
-    { id: 'announcements', label: 'Announcements', icon: MessageSquare },
-    { id: 'duties', label: 'Duty Schedule', icon: Users },
-    { id: 'contacts', label: 'Contacts', icon: Settings }
-  ];
-
-  const renderValidationSummary = () => {
-    if (validationErrors.length === 0) return null;
-
-    const errors = validationErrors.filter(e => e.severity === 'error');
-    const warnings = validationErrors.filter(e => e.severity === 'warning');
-
-    return (
-      <div className="mb-6 space-y-2">
-        {errors.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex items-center mb-2">
-              <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-              <h4 className="text-sm font-medium text-red-800">
-                {errors.length} Error{errors.length !== 1 ? 's' : ''} Found
-              </h4>
-            </div>
-            <ul className="text-sm text-red-700 space-y-1">
-              {errors.map((error, index) => (
-                <li key={index}>• {error.message}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {warnings.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <div className="flex items-center mb-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
-              <h4 className="text-sm font-medium text-yellow-800">
-                {warnings.length} Warning{warnings.length !== 1 ? 's' : ''} Found
-              </h4>
-            </div>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              {warnings.map((warning, index) => (
-                <li key={index}>• {warning.message}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    );
+  const handleCoverChange = (field: keyof Cover, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        [field]: value
+      } as Cover
+    }));
   };
 
-  const renderCoverTab = () => (
+  const handleAddSchedule = () => {
+    setSelectedSchedule(undefined);
+    setSelectedScheduleIndex(undefined);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleEditSchedule = (schedule: Schedule, index: number) => {
+    setSelectedSchedule(schedule);
+    setSelectedScheduleIndex(index);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleDeleteSchedule = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      schedules: prev.schedules?.filter((_, i) => i !== index) || []
+    }));
+  };
+
+  const handleSaveSchedule = (schedule: Schedule) => {
+    if (selectedScheduleIndex !== undefined) {
+      // Edit existing schedule
+      setFormData(prev => ({
+        ...prev,
+        schedules: prev.schedules?.map((s, i) => 
+          i === selectedScheduleIndex ? schedule : s
+        ) || []
+      }));
+    } else {
+      // Add new schedule
+      setFormData(prev => ({
+        ...prev,
+        schedules: [...(prev.schedules || []), schedule]
+      }));
+    }
+  };
+
+  const handleAddAnnouncement = () => {
+    setSelectedAnnouncement(undefined);
+    setSelectedAnnouncementIndex(undefined);
+    setIsAnnouncementModalOpen(true);
+  };
+
+  const handleEditAnnouncement = (announcement: Announcement, index: number) => {
+    setSelectedAnnouncement(announcement);
+    setSelectedAnnouncementIndex(index);
+    setIsAnnouncementModalOpen(true);
+  };
+
+  const handleDeleteAnnouncement = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      announcements: prev.announcements?.filter((_, i) => i !== index) || []
+    }));
+  };
+
+  const handleSaveAnnouncement = (announcement: Announcement) => {
+    if (selectedAnnouncementIndex !== undefined) {
+      // Edit existing announcement
+      setFormData(prev => ({
+        ...prev,
+        announcements: prev.announcements?.map((a, i) => 
+          i === selectedAnnouncementIndex ? announcement : a
+        ) || []
+      }));
+    } else {
+      // Add new announcement
+      setFormData(prev => ({
+        ...prev,
+        announcements: [...(prev.announcements || []), announcement]
+      }));
+    }
+  };
+
+  const handleAddOnDuty = () => {
+    console.log('Adding on duty assignment');
+    setSelectedOnDuty(undefined);
+    setSelectedOnDutyIndex(undefined);
+    setIsOnDutyModalOpen(true);
+  };
+
+  const handleEditOnDuty = (onDuty: OnDuty, index: number) => {
+    setSelectedOnDuty(onDuty);
+    setSelectedOnDutyIndex(index);
+    setIsOnDutyModalOpen(true);
+  };
+
+  const handleDeleteOnDuty = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      onDutyList: prev.onDutyList?.filter((_, i) => i !== index) || []
+    }));
+  };
+
+  const handleSaveOnDuty = (onDuty: OnDuty) => {
+    console.log('Saving on duty assignment:', onDuty);
+    if (selectedOnDutyIndex !== undefined) {
+      // Edit existing on duty
+      setFormData(prev => ({
+        ...prev,
+        onDutyList: prev.onDutyList?.map((o, i) => 
+          i === selectedOnDutyIndex ? onDuty : o
+        ) || []
+      }));
+    } else {
+      // Add new on duty
+      setFormData(prev => ({
+        ...prev,
+        onDutyList: [...(prev.onDutyList || []), onDuty]
+      }));
+    }
+  };
+
+  const renderBasicInfoTab = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Input
-          label="Bulletin Date"
-          type="date"
-          value={formData.bulletinDate || ''}
-          onChange={(value) => handleFieldChange('bulletinDate', value)}
-          required
-        />
-        
-        <Input
-          label="Church Name"
-          value={formData.churchInfo?.name || ''}
-          onChange={(value) => handleFieldChange('churchInfo.name', value)}
-          required
-        />
-        
-        <div className="md:col-span-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Bulletin Title *
+          </label>
           <Input
-            label="Church Address"
-            value={formData.churchInfo?.address || ''}
-            onChange={(value) => handleFieldChange('churchInfo.address', value)}
+            type="text"
+            value={formData.title || ''}
+            onChange={(value) => handleFieldChange('title', value)}
+            placeholder="Enter bulletin title"
+            error={errors.title}
           />
         </div>
         
-        <Input
-          label="Phone"
-          value={formData.churchInfo?.phone || ''}
-          onChange={(value) => handleFieldChange('churchInfo.phone', value)}
-        />
-        
-        <Input
-          label="Email"
-          type="email"
-          value={formData.churchInfo?.email || ''}
-          onChange={(value) => handleFieldChange('churchInfo.email', value)}
-        />
-        
-        <Input
-          label="Website"
-          value={formData.churchInfo?.website || ''}
-          onChange={(value) => handleFieldChange('churchInfo.website', value)}
-        />
-        
-        <Input
-          label="Motto"
-          value={formData.coverContent?.motto || ''}
-          onChange={(value) => handleFieldChange('coverContent.motto', value)}
-        />
-        
-        <div className="md:col-span-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Bulletin Date *
+          </label>
           <Input
-            label="Welcome Message"
-            type="textarea"
-            value={formData.coverContent?.welcomeMessage || ''}
-            onChange={(value) => handleFieldChange('coverContent.welcomeMessage', value)}
-            rows={6}
-            required
+            type="date"
+            value={formData.bulletinDate || ''}
+            onChange={(value) => handleFieldChange('bulletinDate', value)}
+            error={errors.bulletinDate}
           />
         </div>
-        
-        <div className="md:col-span-2">
-          <Input
-            label="Live Stream Note"
-            value={formData.coverContent?.liveStreamNote || ''}
-            onChange={(value) => handleFieldChange('coverContent.liveStreamNote', value)}
-            placeholder="This service is being live-streamed on Facebook and YouTube."
-          />
-        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Status
+        </label>
+        <select
+          value={formData.status || PublicationStatus.DRAFT}
+          onChange={(e) => handleFieldChange('status', e.target.value as PublicationStatus)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value={PublicationStatus.DRAFT}>Draft</option>
+          <option value={PublicationStatus.PUBLISHED}>Published</option>
+          <option value={PublicationStatus.SCHEDULED}>Scheduled</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Content *
+        </label>
+        <textarea
+          value={formData.content || ''}
+          onChange={(e) => handleFieldChange('content', e.target.value)}
+          placeholder="Enter bulletin content..."
+          rows={6}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {errors.content && (
+          <p className="text-red-600 text-sm mt-1">{errors.content}</p>
+        )}
       </div>
     </div>
   );
 
-  const renderServicesTab = () => (
+  const renderCoverTab = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">Service Schedule</h3>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Document Name
+        </label>
+                  <Input
+            type="text"
+            value={formData.cover?.documentName || ''}
+            onChange={(value) => handleCoverChange('documentName', value)}
+            placeholder="e.g., Church Bulletin"
+          />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Welcome Message
+        </label>
+        <textarea
+          value={formData.cover?.welcomeMessage || ''}
+          onChange={(e) => handleCoverChange('welcomeMessage', e.target.value)}
+          placeholder="Enter welcome message..."
+          rows={4}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Footer Message
+        </label>
+                  <Input
+            type="text"
+            value={formData.cover?.footerMessage || ''}
+            onChange={(value) => handleCoverChange('footerMessage', value)}
+            placeholder="Enter footer message..."
+          />
+      </div>
+    </div>
+  );
+
+  const renderSchedulesTab = () => (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium text-gray-900">Service Schedules</h3>
         <Button
           variant="outline"
-          onClick={() => {
-            setIsServiceModalOpen(true);
-          }}
+          size="sm"
+          onClick={handleAddSchedule}
+          icon={Plus}
         >
-          Add Service
+          Add Schedule
         </Button>
       </div>
-      
-      {formData.services?.map((service, index) => (
-        <div key={index} className="bg-gray-50 rounded-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <Input
-              label="Service Name"
-              value={service.label}
-              onChange={(value) => handleFieldChange(`services.${index}.label`, value)}
-            />
-            <Input
-              label="Start Time"
-              value={service.startTime}
-              onChange={(value) => handleFieldChange(`services.${index}.startTime`, value)}
-              placeholder="09:00"
-            />
-            <Input
-              label="End Time"
-              value={service.endTime}
-              onChange={(value) => handleFieldChange(`services.${index}.endTime`, value)}
-              placeholder="09:20"
-            />
-          </div>
-          
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">Role Assignments</h4>
-            {service.roles?.map((role, roleIndex) => (
-              <div key={roleIndex} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="font-medium text-gray-700 capitalize flex items-center">
-                  {role.role.replace('_', ' ')}
+
+      {formData.schedules && formData.schedules.length > 0 ? (
+        <div className="space-y-3">
+          {formData.schedules.map((schedule, index) => (
+            <div key={index} className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{schedule.title}</h4>
+                  <p className="text-sm text-gray-600">
+                    {schedule.startTime} - {schedule.endTime}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Date: {schedule.scheduledDate}
+                  </p>
                 </div>
-                <Input
-                  placeholder="Assigned Person"
-                  value={role.assignedPerson || ''}
-                  onChange={(value) => 
-                    handleFieldChange(`services.${index}.roles.${roleIndex}.assignedPerson`, value)
-                  }
-                />
-                {(role.role.includes('song') || role.role === 'music') && (
-                  <Input
-                    placeholder="Hymn Number / Song Title"
-                    value={role.hymnNumber || role.songTitle || ''}
-                    onChange={(value) => 
-                      handleFieldChange(`services.${index}.roles.${roleIndex}.hymnNumber`, value)
-                    }
-                  />
-                )}
+                <div className="flex space-x-2">
+                                     <Button
+                     variant="outline"
+                     size="sm"
+                     onClick={() => handleEditSchedule(schedule, index)}
+                     icon={Edit}
+                   >
+                     Edit
+                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteSchedule(index)}
+                    icon={Trash2}
+                    className="text-red-600"
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      ))}
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No schedules added yet</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAddSchedule}
+            className="mt-2"
+          >
+            Add First Schedule
+          </Button>
+        </div>
+      )}
     </div>
   );
 
   const renderAnnouncementsTab = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Announcements</h3>
         <Button
           variant="outline"
-          onClick={() => {
-            setIsAnnouncementModalOpen(true);
-          }}
+          size="sm"
+          onClick={handleAddAnnouncement}
+          icon={Plus}
         >
           Add Announcement
         </Button>
       </div>
-      
-      {formData.announcements?.map((announcement, index) => (
-        <div key={index} className="bg-gray-50 rounded-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Title"
-              value={announcement.title}
-              onChange={(value) => handleFieldChange(`announcements.${index}.title`, value)}
-              required
-            />
-            <Input
-              label="Type"
-              value={announcement.type}
-              onChange={(value) => handleFieldChange(`announcements.${index}.type`, value)}
-            />
-            <div className="md:col-span-2">
-              <Input
-                label="Description"
-                type="textarea"
-                value={announcement.description}
-                onChange={(value) => handleFieldChange(`announcements.${index}.description`, value)}
-                rows={4}
-                required
-              />
+
+      {formData.announcements && formData.announcements.length > 0 ? (
+        <div className="space-y-3">
+          {formData.announcements.map((announcement, index) => (
+            <div key={index} className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{announcement.title}</h4>
+                  <p className="text-sm text-gray-600 mt-1">{announcement.content}</p>
+                </div>
+                <div className="flex space-x-2">
+                                     <Button
+                     variant="outline"
+                     size="sm"
+                     onClick={() => handleEditAnnouncement(announcement, index)}
+                     icon={Edit}
+                   >
+                     Edit
+                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteAnnouncement(index)}
+                    icon={Trash2}
+                    className="text-red-600"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
             </div>
-            <Input
-              label="Start Date"
-              type="date"
-              value={announcement.startDate || ''}
-              onChange={(value) => handleFieldChange(`announcements.${index}.startDate`, value)}
-            />
-            <Input
-              label="End Date"
-              type="date"
-              value={announcement.endDate || ''}
-              onChange={(value) => handleFieldChange(`announcements.${index}.endDate`, value)}
-            />
-            <Input
-              label="Contact Person"
-              value={announcement.contactPerson || ''}
-              onChange={(value) => handleFieldChange(`announcements.${index}.contactPerson`, value)}
-            />
-            <Input
-              label="Contact Phone"
-              value={announcement.contactPhone || ''}
-              onChange={(value) => handleFieldChange(`announcements.${index}.contactPhone`, value)}
-            />
-          </div>
+          ))}
         </div>
-      ))}
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No announcements added yet</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAddAnnouncement}
+            className="mt-2"
+          >
+            Add First Announcement
+          </Button>
+        </div>
+      )}
     </div>
   );
 
-  return (
-    <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {bulletin ? 'Edit Bulletin' : 'Create Bulletin'}
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {formData.bulletinDate && `Sabbath, ${new Date(formData.bulletinDate).toLocaleDateString()}`}
-          </p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            variant="outline"
-            onClick={() => setPreviewMode(true)}
-            icon={Eye}
-          >
-            Preview
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            loading={isLoading}
-            icon={Save}
-          >
-            Save Bulletin
-          </Button>
-        </div>
+  const renderOnDutyTab = () => (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium text-gray-900">On Duty Assignments</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAddOnDuty}
+          icon={Plus}
+        >
+          Add Assignment
+        </Button>
       </div>
 
-      {/* Validation Summary */}
-      {renderValidationSummary()}
+      {formData.onDutyList && formData.onDutyList.length > 0 ? (
+        <div className="space-y-3">
+          {formData.onDutyList.map((onDuty, index) => (
+            <div key={index} className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{onDuty.role}</h4>
+                  {onDuty.activity && (
+                    <p className="text-sm text-gray-600">{onDuty.activity}</p>
+                  )}
+                  <p className="text-sm text-gray-600">
+                    Participants: {onDuty.participates.join(', ')}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Date: {onDuty.date}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                                     <Button
+                     variant="outline"
+                     size="sm"
+                     onClick={() => handleEditOnDuty(onDuty, index)}
+                     icon={Edit}
+                   >
+                     Edit
+                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteOnDuty(index)}
+                    icon={Trash2}
+                    className="text-red-600"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No duty assignments added yet</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAddOnDuty}
+            className="mt-2"
+          >
+            Add First Assignment
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 
+  const tabs = [
+    { id: 'basic', label: 'Basic Info', icon: FileText },
+    { id: 'cover', label: 'Cover', icon: Eye },
+    { id: 'schedules', label: 'Schedules', icon: Calendar },
+    { id: 'announcements', label: 'Announcements', icon: MessageSquare },
+    { id: 'onDuty', label: 'On Duty', icon: Users }
+  ];
+
+  return (
+    <div className="space-y-6">
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -427,14 +555,14 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                   activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
+                    ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <Icon className="h-5 w-5 mr-2" />
-                {tab.label}
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
               </button>
             );
           })}
@@ -442,25 +570,49 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white">
+      <div className="min-h-[400px]">
+        {activeTab === 'basic' && renderBasicInfoTab()}
         {activeTab === 'cover' && renderCoverTab()}
-        {activeTab === 'services' && renderServicesTab()}
+        {activeTab === 'schedules' && renderSchedulesTab()}
         {activeTab === 'announcements' && renderAnnouncementsTab()}
-        {/* Add other tab renderers */}
+        {activeTab === 'onDuty' && renderOnDutyTab()}
       </div>
 
-      {/* Validation Button */}
-      <div className="mt-8 flex justify-center">
-        <Button
-          variant="outline"
-          onClick={handleValidation}
-          loading={isValidating}
-          icon={validationErrors.length === 0 ? CheckCircle : AlertTriangle}
-          className={validationErrors.length === 0 ? 'text-green-600 border-green-300' : ''}
-        >
-          {isValidating ? 'Validating...' : 'Validate Bulletin'}
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+        <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+          Cancel
         </Button>
+                  <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Saving...' : 'Save Bulletin'}
+          </Button>
       </div>
+
+      {/* Modals */}
+      <ScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        schedule={selectedSchedule}
+        onSave={handleSaveSchedule}
+      />
+
+      <AnnouncementModal
+        isOpen={isAnnouncementModalOpen}
+        onClose={() => setIsAnnouncementModalOpen(false)}
+        announcement={selectedAnnouncement}
+        onSave={handleSaveAnnouncement}
+      />
+
+      <OnDutyModal
+        isOpen={isOnDutyModalOpen}
+        onClose={() => setIsOnDutyModalOpen(false)}
+        onDuty={selectedOnDuty}
+        onSave={handleSaveOnDuty}
+      />
     </div>
   );
 };
