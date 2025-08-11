@@ -22,11 +22,7 @@ export const BulletinsView: React.FC = () => {
   useEffect(() => {
     fetchBulletins();
   }, []);
-  // useEffect(() => {
-  //   fetchBulletins();
-  // }, [filters]);
   
-
   const fetchBulletins = async () => {
     try {
       setLoading(true);
@@ -93,24 +89,13 @@ export const BulletinsView: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={fetchBulletins} variant="primary">
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-1 p-3">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Church Bulletins</h1>
-          <p className="text-gray-600 mt-2">View and manage church bulletins</p>
+          {/* <h1 className="text-3xl font-bold text-gray-900">Church Bulletins</h1>
+          <p className="text-gray-600 mt-2">View and manage church bulletins</p> */}
         </div>
         <div className="flex space-x-2">
           <Button
@@ -123,15 +108,12 @@ export const BulletinsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <DateFilterBar onFilterChange={handleFilterChange} />
-
       {/* Bulletins Grid/List */}
       {bulletins.length === 0 ? (
         <div className="text-center py-12">
           <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No bulletins found</h3>
-          <p className="text-gray-600">Create your first bulletin to get started.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No bulletins Published Yet</h3>
+          <p className="text-gray-600">Please Check For Updates At A Later Time.</p>
         </div>
       ) : (
         <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>

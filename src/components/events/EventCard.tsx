@@ -1,4 +1,3 @@
-import React from 'react';
 import { Calendar, MapPin, Clock, Edit, Trash2, Eye } from 'lucide-react';
 import { Event } from '../../types/Event';
 import { dateUtils } from '../../utils/dateUtils';
@@ -61,6 +60,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 src={event.imageUrl}
                 alt={event.title}
                 className="w-24 h-24 object-cover rounded-lg"
+                loading='lazy'
               />
             </div>
           )}
@@ -116,6 +116,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             src={event.imageUrl}
             alt={event.title}
             className="w-full h-48 object-cover"
+            loading='lazy'
           />
         </div>
       )}

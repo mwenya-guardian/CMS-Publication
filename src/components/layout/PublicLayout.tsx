@@ -19,7 +19,7 @@ export const PublicLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 border-b-2 border-primary-600">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+      <nav className="bg-gradient-to-r from-white to-accent-50 shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-4">
           <div className="flex justify-between h-16">
             <div className="flex items-center mr-auto">
@@ -31,7 +31,7 @@ export const PublicLayout: React.FC = () => {
               <Link to="/" className="flex-shrink-0">
                 <div className="flex items-center space-x-4">
                   <div>
-                    <h1 className="text-2xl text-primary-600 font-bold">Church Announcements System</h1>
+                    <h1 className="text-2xl text-primary-600 font-bold">CAS</h1>
                     <p className="text-blue-600">Seventh-day Adventist Church</p>
                   </div>
                 </div>
