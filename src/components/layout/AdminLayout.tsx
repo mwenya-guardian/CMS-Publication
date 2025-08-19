@@ -22,6 +22,8 @@ const navigation = [
   { name: 'Events', href: '/admin/events', icon: Calendar },
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
   { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
+  { name: 'Members', href: '/admin/members', icon: User },
+  { name: 'Settings', href: '/admin/settings', icon: Settings }
 ];
 
 export const AdminLayout: React.FC = () => {

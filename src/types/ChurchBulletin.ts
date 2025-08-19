@@ -1,13 +1,11 @@
 // Core Church Bulletin Types - Updated to match backend structure
 export interface ChurchBulletin {
-  id: string;
+  id?: string;
   title: string;
   bulletinDate: string; // ISO date format
   content: string;
   status: PublicationStatus;
-  publishedAt?: string;
   scheduledPublishAt?: string;
-  author?: User;
   cover?: Cover;
   schedules: Schedule[];
   announcements: Announcement[];
@@ -37,9 +35,7 @@ export interface Cover {
 export interface Schedule {
   id?: string;
   title: string;
-  roleAssignment: OnDuty[];
-  activityAssignment: OnDuty[];
-  activityDetails: Record<string, string[]>;
+  scheduledActivities: Map<string, string>;
   startTime: string; // HH:mm format
   endTime: string; // HH:mm format
   scheduledDate: string; // ISO date format
@@ -49,7 +45,7 @@ export interface Announcement {
   id: string;
   title: string;
   content: string;
-  bulletin?: ChurchBulletin;
+  // bulletin?: ChurchBulletin;
 }
 
 export interface OnDuty {

@@ -110,7 +110,7 @@ export const PublicLayout: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 m-3 rounded-lg">
+      <footer className="bg-accent-50 border-t border-gray-200 m-3 rounded-lg">
       {/* Principles of Our Faith */}
       <div className="bg-blue-80 rounded-lg p-6 shadow-md">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Principles of Our Faith</h2>

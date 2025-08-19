@@ -8,6 +8,7 @@ import { Quote as QuoteType } from '../../types/Quote';
 import { publicationService } from '../../services/publicationService';
 import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
+import { membersService } from '../../services/memberService';
 import { PublicationCard } from '../../components/publications/PublicationCard';
 import { EventCard } from '../../components/events/EventCard';
 import { QuoteCard } from '../../components/quotes/QuoteCard';
@@ -18,6 +19,7 @@ import { ChurchBulletin } from '../../types/ChurchBulletin';
 import { BulletinCard } from '../../components/bulletin/BulletinCard';
 import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 import { preloadImage } from '../../utils/imageCache';
+import { Member } from '../../types/Members';
 
 const HERO_ROTATE_INTERVAL_MS = 5000;
 
@@ -27,6 +29,7 @@ export const Home: React.FC = () => {
   const [featuredQuotes, setFeaturedQuotes] = useState<QuoteType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [latestBulletins, setLatestBulletins] = useState<ChurchBulletin[]>([]);
+  const [pastoralTeam, setPastoralTeam] = useState<Member[]>([]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -88,10 +91,11 @@ export const Home: React.FC = () => {
 
         setIsLoading(true);
 
-        const [publications, events, quotes] = await Promise.all([
+        const [publications, events, quotes, pastoral] = await Promise.all([
           publicationService.getPaginated(1, 3, { featured: true }),
           eventService.getPaginated(1, 3),
           quoteService.getPaginated(1, 3, { featured: true }),
+          membersService.getByPositionType('Pastor'),
         ]);
 
         if (!mounted) return;
@@ -147,6 +151,8 @@ export const Home: React.FC = () => {
         setUpcomingEvents(eventsWithBlobs);
 
         setFeaturedQuotes(quotesWithBlobs);
+
+        setPastoralTeam(pastoral);
 
         // latestBulletins left empty unless bulletinService is enabled (keeps parity with original)
       } catch (error) {
@@ -329,6 +335,17 @@ export const Home: React.FC = () => {
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg p-3 flex flex-col items-center gap-2 shadow-sm">
+            {
+              pastoralTeam.map((member) => (
+                <div key={member.id} className="flex items-center gap-2">
+                  <img src={member.photoUrl} alt={member.firstname} className="w-12 h-12 rounded-full" />
+                  <div>
+                    <div className="text-sm font-semibold text-gray-900">{member.firstname} {member.lastname}</div>
+                    <div className="text-xs text-gray-500">{member.position}</div>
+                  </div>
+                </div>
+              ))
+            }
             <div className="w-full md:w-48">
               <img src={sdalogo} alt="Newsletter Logo" className="w-40 rounded-full mx-auto" />
             </div>
@@ -346,13 +363,7 @@ export const Home: React.FC = () => {
             <div className="w-full md:w-48">
               <img src={sdalogo} alt="Newsletter Logo" className="w-32 rounded-full mx-auto" />
             </div>
-            <div className="p-3 bg-green-50 rounded-md">
-              <Calendar className="w-6 h-6 text-secondary-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">828,867</div>
-              <div className="text-sm text-gray-500">Event Bookings</div>
-            </div>
+  
           </div>
 
           <div className="bg-white rounded-lg p-6 flex items-center gap-4 shadow-sm">

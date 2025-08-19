@@ -31,6 +31,10 @@ export interface FilterOptions {
   search?: string;
   category?: string;
   featured?: boolean;
+
+  // member filters
+  positionType?: string;
+  position?: string;
 }
 
 export type LayoutType = 'grid' | 'list' | 'masonry';

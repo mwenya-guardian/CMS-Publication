@@ -19,6 +19,7 @@ import { PublicationsPage } from './pages/admin/PublicationsPage';
 import { EventsPage } from './pages/admin/EventsPage';
 import { QuotesPage } from './pages/admin/QuotesPage';
 import { BulletinsPage } from './pages/admin/BulletinsPage';
+import { MembersPage } from './pages/admin/MemberPage'; // Ensure this matches your file structure
 
 // Auth Pages
 import { Login } from './pages/auth/Login';
@@ -52,6 +53,7 @@ function App() {
             <Route path="events" element={<EventsPage />} />
             <Route path="quotes" element={<QuotesPage />} />
             <Route path="bulletins" element={<BulletinsPage />} />
+            <Route path="members" element={<MembersPage />} />
           </Route>
 
           {/* Catch all route - redirect to home */}

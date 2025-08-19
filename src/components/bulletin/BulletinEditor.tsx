@@ -53,9 +53,70 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
   const [selectedAnnouncementIndex, setSelectedAnnouncementIndex] = useState<number | undefined>();
   const [selectedOnDutyIndex, setSelectedOnDutyIndex] = useState<number | undefined>();
 
+  // ---------- Helper functions to normalize/serialize scheduledActivities ----------
+  // Accepts Map | object | array-of-pairs | array-of-objects and returns Map<string,string>
+  function normalizeToMap(input: any): Map<string, string> {
+    const map = new Map<string, string>();
+    if (!input) return map;
+
+    if (input instanceof Map) {
+      input.forEach((v: string, k: string) => map.set(String(k), String(v ?? '')));
+      return map;
+    }
+
+    if (Array.isArray(input)) {
+      for (const el of input) {
+        if (Array.isArray(el) && el.length >= 2) {
+          map.set(String(el[0]), String(el[1] ?? ''));
+        } else if (el && typeof el === 'object' && 'key' in el && 'value' in el) {
+          map.set(String(el.key), String(el.value ?? ''));
+        }
+      }
+      return map;
+    }
+
+    if (typeof input === 'object') {
+      Object.entries(input).forEach(([k, v]) => {
+        if (Object.prototype.hasOwnProperty.call(input, k)) {
+          map.set(String(k), v == null ? '' : String(v));
+        }
+      });
+      return map;
+    }
+
+    return map;
+  }
+
+  // Convert Map<string,string> to plain object for serialization (safe for JSON)
+  function mapToObject(map: Map<string, string> | any): Record<string, string> {
+    if (!map) return {};
+    if (map instanceof Map) {
+      return Object.fromEntries(Array.from(map.entries()));
+    }
+    // if already object, shallow copy
+    if (typeof map === 'object') {
+      return { ...map };
+    }
+    return {};
+  }
+
+  // Normalize incoming schedule object to ensure scheduledActivities is a Map
+  function normalizeSchedule(schedule: Schedule): Schedule {
+    return {
+      ...schedule,
+      scheduledActivities: normalizeToMap((schedule as any).scheduledActivities)
+    };
+  }
+
+  // ---------- Initialize formData ----------
   useEffect(() => {
     if (bulletin) {
-      setFormData(bulletin);
+      // Normalize schedules' activities into Maps for stable editing in the UI
+      const normalizedSchedules = (bulletin.schedules || []).map(s => normalizeSchedule(s));
+      setFormData({
+        ...bulletin,
+        schedules: normalizedSchedules
+      });
     } else {
       // Initialize with default structure
       setFormData({
@@ -75,6 +136,7 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
     }
   }, [bulletin]);
 
+  // ---------- Validation ----------
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -94,12 +156,29 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  // ---------- Save flow ----------
   const handleSave = async () => {
-    if (validateForm()) {
-      await onSave(formData);
+    if (!validateForm()) return;
+
+    // Before calling onSave, serialize Maps to plain objects so payload is JSON-friendly
+    const payload: Partial<ChurchBulletin> = { ...formData };
+
+    if (payload.schedules && Array.isArray(payload.schedules)) {
+      payload.schedules = payload.schedules.map((s: any) => {
+        const scheduledActivitiesMap = (s && (s as Schedule).scheduledActivities) ?? new Map();
+        return {
+          ...s,
+          // serialized activities as plain object { timeOrLabel: activity }
+          scheduledActivities: mapToObject(scheduledActivitiesMap)
+        };
+      }) as unknown as Schedule[];
     }
+
+    // announcements and onDutyList are left as-is (they should already be serializable)
+    await onSave(payload);
   };
 
+  // ---------- Field handlers ----------
   const handleFieldChange = (field: keyof ChurchBulletin, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
@@ -118,6 +197,7 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
     }));
   };
 
+  // ---------- Schedule handlers ----------
   const handleAddSchedule = () => {
     setSelectedSchedule(undefined);
     setSelectedScheduleIndex(undefined);
@@ -125,7 +205,8 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
   };
 
   const handleEditSchedule = (schedule: Schedule, index: number) => {
-    setSelectedSchedule(schedule);
+    // Ensure we pass a normalized schedule to the modal (Map in scheduledActivities)
+    setSelectedSchedule(normalizeSchedule(schedule));
     setSelectedScheduleIndex(index);
     setIsScheduleModalOpen(true);
   };
@@ -138,23 +219,32 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
   };
 
   const handleSaveSchedule = (schedule: Schedule) => {
+    // normalize incoming schedule.scheduledActivities to Map
+    const normalized = normalizeSchedule(schedule);
+
     if (selectedScheduleIndex !== undefined) {
       // Edit existing schedule
       setFormData(prev => ({
         ...prev,
         schedules: prev.schedules?.map((s, i) => 
-          i === selectedScheduleIndex ? schedule : s
+          i === selectedScheduleIndex ? normalized : s
         ) || []
       }));
     } else {
       // Add new schedule
       setFormData(prev => ({
         ...prev,
-        schedules: [...(prev.schedules || []), schedule]
+        schedules: [...(prev.schedules || []), normalized]
       }));
     }
+
+    // close modal
+    setIsScheduleModalOpen(false);
+    setSelectedSchedule(undefined);
+    setSelectedScheduleIndex(undefined);
   };
 
+  // ---------- Announcement handlers ----------
   const handleAddAnnouncement = () => {
     setSelectedAnnouncement(undefined);
     setSelectedAnnouncementIndex(undefined);
@@ -190,10 +280,13 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
         announcements: [...(prev.announcements || []), announcement]
       }));
     }
+    setIsAnnouncementModalOpen(false);
+    setSelectedAnnouncement(undefined);
+    setSelectedAnnouncementIndex(undefined);
   };
 
+  // ---------- OnDuty handlers ----------
   const handleAddOnDuty = () => {
-    console.log('Adding on duty assignment');
     setSelectedOnDuty(undefined);
     setSelectedOnDutyIndex(undefined);
     setIsOnDutyModalOpen(true);
@@ -213,7 +306,6 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
   };
 
   const handleSaveOnDuty = (onDuty: OnDuty) => {
-    console.log('Saving on duty assignment:', onDuty);
     if (selectedOnDutyIndex !== undefined) {
       // Edit existing on duty
       setFormData(prev => ({
@@ -229,8 +321,12 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
         onDutyList: [...(prev.onDutyList || []), onDuty]
       }));
     }
+    setIsOnDutyModalOpen(false);
+    setSelectedOnDuty(undefined);
+    setSelectedOnDutyIndex(undefined);
   };
 
+  // ---------- Render helpers ----------
   const renderBasicInfoTab = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -299,12 +395,12 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Document Name
         </label>
-                  <Input
-            type="text"
-            value={formData.cover?.documentName || ''}
-            onChange={(value) => handleCoverChange('documentName', value)}
-            placeholder="e.g., Church Bulletin"
-          />
+        <Input
+          type="text"
+          value={formData.cover?.documentName || ''}
+          onChange={(value) => handleCoverChange('documentName', value)}
+          placeholder="e.g., Church Bulletin"
+        />
       </div>
 
       <div>
@@ -324,12 +420,12 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Footer Message
         </label>
-                  <Input
-            type="text"
-            value={formData.cover?.footerMessage || ''}
-            onChange={(value) => handleCoverChange('footerMessage', value)}
-            placeholder="Enter footer message..."
-          />
+        <Input
+          type="text"
+          value={formData.cover?.footerMessage || ''}
+          onChange={(value) => handleCoverChange('footerMessage', value)}
+          placeholder="Enter footer message..."
+        />
       </div>
     </div>
   );
@@ -350,40 +446,57 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
 
       {formData.schedules && formData.schedules.length > 0 ? (
         <div className="space-y-3">
-          {formData.schedules.map((schedule, index) => (
-            <div key={index} className="bg-gray-50 rounded-lg p-4">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{schedule.title}</h4>
-                  <p className="text-sm text-gray-600">
-                    {schedule.startTime} - {schedule.endTime}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Date: {schedule.scheduledDate}
-                  </p>
-                </div>
-                <div className="flex space-x-2">
-                                     <Button
-                     variant="outline"
-                     size="sm"
-                     onClick={() => handleEditSchedule(schedule, index)}
-                     icon={Edit}
-                   >
-                     Edit
-                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteSchedule(index)}
-                    icon={Trash2}
-                    className="text-red-600"
-                  >
-                    Delete
-                  </Button>
+          {formData.schedules.map((schedule, index) => {
+            // schedule may have scheduledActivities as Map - produce preview
+            const activitiesPreview = (() => {
+              try {
+                const map = normalizeToMap((schedule as any).scheduledActivities);
+                const entries = Array.from(map.entries()).slice(0, 3);
+                if (entries.length === 0) return 'No activities';
+                return entries.map(([k, v]) => `${k}: ${v}`).join(' • ');
+              } catch {
+                return '';
+              }
+            })();
+
+            return (
+              <div key={index} className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{schedule.title}</h4>
+                    <p className="text-sm text-gray-600">
+                      {schedule.startTime} - {schedule.endTime}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Date: {schedule.scheduledDate}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      <strong>Activities:</strong> {activitiesPreview}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditSchedule(schedule as Schedule, index)}
+                      icon={Edit}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteSchedule(index)}
+                      icon={Trash2}
+                      className="text-red-600"
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-8 text-gray-500">
@@ -426,14 +539,14 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
                   <p className="text-sm text-gray-600 mt-1">{announcement.content}</p>
                 </div>
                 <div className="flex space-x-2">
-                                     <Button
-                     variant="outline"
-                     size="sm"
-                     onClick={() => handleEditAnnouncement(announcement, index)}
-                     icon={Edit}
-                   >
-                     Edit
-                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditAnnouncement(announcement, index)}
+                    icon={Edit}
+                  >
+                    Edit
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -497,14 +610,14 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
                   </p>
                 </div>
                 <div className="flex space-x-2">
-                                     <Button
-                     variant="outline"
-                     size="sm"
-                     onClick={() => handleEditOnDuty(onDuty, index)}
-                     icon={Edit}
-                   >
-                     Edit
-                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditOnDuty(onDuty, index)}
+                    icon={Edit}
+                  >
+                    Edit
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -583,36 +696,49 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
         <Button variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>
-                  <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Saving...' : 'Save Bulletin'}
-          </Button>
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Saving...' : 'Save Bulletin'}
+        </Button>
       </div>
 
       {/* Modals */}
       <ScheduleModal
         isOpen={isScheduleModalOpen}
-        onClose={() => setIsScheduleModalOpen(false)}
+        onClose={() => {
+          setIsScheduleModalOpen(false);
+          setSelectedSchedule(undefined);
+          setSelectedScheduleIndex(undefined);
+        }}
         schedule={selectedSchedule}
         onSave={handleSaveSchedule}
       />
 
       <AnnouncementModal
         isOpen={isAnnouncementModalOpen}
-        onClose={() => setIsAnnouncementModalOpen(false)}
+        onClose={() => {
+          setIsAnnouncementModalOpen(false);
+          setSelectedAnnouncement(undefined);
+          setSelectedAnnouncementIndex(undefined);
+        }}
         announcement={selectedAnnouncement}
         onSave={handleSaveAnnouncement}
       />
 
       <OnDutyModal
         isOpen={isOnDutyModalOpen}
-        onClose={() => setIsOnDutyModalOpen(false)}
+        onClose={() => {
+          setIsOnDutyModalOpen(false);
+          setSelectedOnDuty(undefined);
+          setSelectedOnDutyIndex(undefined);
+        }}
         onDuty={selectedOnDuty}
         onSave={handleSaveOnDuty}
       />
     </div>
   );
 };
+  
