@@ -11,7 +11,8 @@ import {
   BookOpen,
   LogOut,
   User,
-  Bell
+  Bell,
+  HandHeart
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
@@ -23,7 +24,10 @@ const navigation = [
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
   { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
   { name: 'Members', href: '/admin/members', icon: User },
-  { name: 'Settings', href: '/admin/settings', icon: Settings }
+  { name: 'Users', href: '/admin/users', icon: User },
+  { name: 'Giving', href: '/admin/giving', icon: HandHeart },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
+   
 ];
 
 export const AdminLayout: React.FC = () => {
@@ -124,7 +128,7 @@ export const AdminLayout: React.FC = () => {
                 </div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+                <p className="text-sm font-medium text-gray-700">{user?.firstname} {user?.lastname}</p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>

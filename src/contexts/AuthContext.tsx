@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        if (authService.isAuthenticated()) {
+        if (authService.isAuthenticated() && !authService.isExpired()) {
           const storedUser = authService.getStoredUser();
           if (storedUser) {
             setUser(storedUser);
@@ -45,6 +45,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               console.warn('Failed to refresh user data:', error);
             }
           }
+        } else {
+          logout();
         }
       } catch (error) {
         console.error('Auth initialization failed:', error);

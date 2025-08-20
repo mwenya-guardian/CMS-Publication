@@ -15,6 +15,12 @@ export const authService = {
     await api.post('/auth/logout');
   },
 
+  isExpired(): boolean {
+    const expiresAt = localStorage.getItem('expiresAt');
+    if (!expiresAt) return true;
+    return Date.now() > new Date(expiresAt).getTime();
+  },
+
   async getCurrentUser(): Promise<User> {
     const response = await api.get<ApiResponse<User>>('/auth/me');
     return response.data.data;
@@ -34,5 +40,6 @@ export const authService = {
   storeAuthData(loginResponse: LoginResponse): void {
     localStorage.setItem('authToken', loginResponse.token);
     localStorage.setItem('user', JSON.stringify(loginResponse.user));
+    localStorage.setItem('expiresAt', loginResponse.expiresAt);
   },
 };

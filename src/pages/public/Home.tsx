@@ -334,32 +334,24 @@ export const Home: React.FC = () => {
       {/* stats strip */}
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg p-3 flex flex-col items-center gap-2 shadow-sm">
+          
             {
               pastoralTeam.map((member) => (
-                <div key={member.id} className="flex items-center gap-2">
-                  <img src={member.photoUrl} alt={member.firstname} className="w-12 h-12 rounded-full" />
+                <div key={member.id} className="bg-white rounded-lg p-3 flex flex-col items-center gap-2 shadow-sm">
+                  <div className="w-full md:w-48">
+                  <img src={member.photoUrl} alt={member.firstname} className="w-40 h-40 rounded-full mx-auto" />
+                  </div>
                   <div>
-                    <div className="text-sm font-semibold text-gray-900">{member.firstname} {member.lastname}</div>
-                    <div className="text-xs text-gray-500">{member.position}</div>
+                    <div className="text-sm font-semibold text-gray-900 mx-auto">{member.firstname.toUpperCase()} {member.lastname.toUpperCase()}</div>
+                    <div className="text-sm text-gray-500 mx-auto">{member.position.toUpperCase()}</div>
+                    <div className="text-sm text-gray-500 mx-auto">{member.positionType.toUpperCase()}</div>
                   </div>
                 </div>
               ))
             }
-            <div className="w-full md:w-48">
-              <img src={sdalogo} alt="Newsletter Logo" className="w-40 rounded-full mx-auto" />
-            </div>
-            {/* <div className="p-3 bg-green-50 rounded-md">
-              <Globe className="w-6 h-6 text-secondary-500" />
-            </div> */}
-            <div>
-              <div className="text-2xl font-bold text-gray-900 mx-auto">Pastor</div>
-              <div className="text-sm text-gray-500 mx-auto">Joseph</div>
-              <div className="text-sm text-gray-500 mx-auto">Members</div>
-            </div>
-          </div>
+          
 
-          <div className="bg-white rounded-lg p-6 flex items-center gap-4 shadow-sm">
+          {/* <div className="bg-white rounded-lg p-6 flex items-center gap-4 shadow-sm">
             <div className="w-full md:w-48">
               <img src={sdalogo} alt="Newsletter Logo" className="w-32 rounded-full mx-auto" />
             </div>
@@ -377,7 +369,7 @@ export const Home: React.FC = () => {
               <div className="text-2xl font-bold text-gray-900">1,926,436</div>
               <div className="text-sm text-gray-500">Publications</div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

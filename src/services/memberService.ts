@@ -2,14 +2,7 @@ import api from './api';
 import { Member, CreateMemberRequest, UpdateMemberRequest} from '../types/Members';
 import { ApiResponse, PaginatedResponse, FilterOptions } from '../types/Common';
 
-/**
- * membersService
- * - Mirrors the style of eventService in your repo.
- * - NOTE: backend controller had ambiguous GET mappings for `/{id}` and `/{position}`.
- *   For safety this service calls `/members/position/{position}` for getByPosition.
- *   If your backend actually exposes `/members/{position}` (and disambiguates),
- *   change the route below accordingly.
- */
+
 export const membersService = {
   async getAll(filters?: FilterOptions): Promise<Member[]> {
     const response = await api.get<ApiResponse<Member[]>>('/members', { params: filters });
@@ -28,15 +21,7 @@ export const membersService = {
     return response.data.data;
   },
 
-  /**
-   * getByPosition
-   * NOTE: controller currently has a conflicting @GetMapping("/{position}") route.
-   * Recommended backend change: expose a distinct route such as /members/position/{position}
-   * or use a query parameter /members?position=...
-   *
-   * If your backend keeps the ambiguous mapping, change the URL to `/members/${position}`
-   * but be aware of the collision with getById.
-   */
+ 
   async getByPosition(position: string): Promise<Member[]> {
     const response = await api.get<ApiResponse<Member[]>>(`/members/position/${encodeURIComponent(position)}`);
     return response.data.data;
@@ -63,11 +48,6 @@ export const membersService = {
     await api.delete(`/members/${id}`);
   },
 
-  /**
-   * uploadPhoto
-   * - Expects backend endpoint to accept multipart/form-data at /members/upload-photo
-   * - Returns uploaded file URL string (adjust to your ApiResponse shape)
-   */
   async uploadPhoto(file: File): Promise<string> {
     const formData = new FormData();
     formData.append('image', file);
