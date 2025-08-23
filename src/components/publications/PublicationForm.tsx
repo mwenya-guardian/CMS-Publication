@@ -5,6 +5,7 @@ import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { ImageUploader } from '../common/ImageUploader';
 import { Save, X } from 'lucide-react';
+import { publicationService } from '../../services/publicationService';
 
 interface PublicationFormProps {
   publication?: Publication;
@@ -53,7 +54,7 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
       content: formData.content,
       imageUrl: formData.imageUrl || undefined,
       date: formData.date,
-      layoutType: formData.layoutType,
+      layoutType: formData.layoutType.toUpperCase() as 'grid' | 'list' | 'masonry' | 'GRID' | 'LIST' | 'MASONRY',
       author: formData.author || undefined,
       tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : undefined,
       featured: formData.featured,
@@ -71,9 +72,9 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
   };
 
   const layoutOptions = [
-    { value: 'grid', label: 'Grid Layout' },
-    { value: 'list', label: 'List Layout' },
-    { value: 'masonry', label: 'Masonry Layout' },
+    { value: 'GRID', label: 'Grid Layout' },
+    { value: 'LIST', label: 'List Layout' },
+    { value: 'MASONRY', label: 'Masonry Layout' },
   ];
 
   return (
@@ -151,6 +152,7 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({
             value={formData.imageUrl}
             onChange={(url) => handleInputChange('imageUrl', url)}
             onRemove={() => handleInputChange('imageUrl', '')}
+            onUpload={publicationService.uploadImage}
           />
         </div>
       </div>

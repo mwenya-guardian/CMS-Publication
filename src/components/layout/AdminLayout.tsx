@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 import { 
   Menu, 
   X, 
@@ -8,9 +9,13 @@ import {
   Calendar, 
   Quote, 
   Settings, 
+  BookOpen,
   LogOut,
   User,
-  Bell
+  Bell,
+  HandHeart,
+  UserCog,
+  Church
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
@@ -20,6 +25,13 @@ const navigation = [
   { name: 'Publications', href: '/admin/publications', icon: FileText },
   { name: 'Events', href: '/admin/events', icon: Calendar },
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
+  { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
+  { name: 'Members', href: '/admin/members', icon: User },
+  { name: 'Users', href: '/admin/users', icon: UserCog },
+  { name: 'Giving', href: '/admin/giving', icon: HandHeart },
+  // { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Church', href: '/admin/church-details', icon: Church },
+
 ];
 
 export const AdminLayout: React.FC = () => {
@@ -120,7 +132,7 @@ export const AdminLayout: React.FC = () => {
                 </div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+                <p className="text-sm font-medium text-gray-700">{user?.firstname} {user?.lastname}</p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>
@@ -156,7 +168,7 @@ export const AdminLayout: React.FC = () => {
             </div>
             <div className="ml-4 flex items-center md:ml-6">
               <button className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                <Bell className="h-6 w-6" />
+                <img src={sdalogo} alt="client" className="h-10 object-contain" />
               </button>
             </div>
           </div>

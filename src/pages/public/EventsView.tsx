@@ -110,28 +110,29 @@ export const EventsView: React.FC = () => {
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Events
+            Quotes
           </h1>
           <p className="text-xl text-secondary-100 mb-8 max-w-3xl mx-auto">
-            Discover upcoming events, workshops, conferences, and special occasions. 
-            Join us for memorable experiences and meaningful connections.
+            Find inspiration in words of wisdom from the bible and other great sources
+            <br />
+            based on scripture
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search events..."
+                placeholder="Search quotes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
+                className="w-full pl-10 pr-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <Button
-              variant="accent"
+              variant="primary"
               onClick={() => setIsFiltersOpen(!isFiltersOpen)}
               icon={Filter}
-              className={hasActiveFilters ? 'bg-accent-400' : ''}
+              className={hasActiveFilters ? 'bg-primary-400' : ''}
             >
               Filters
             </Button>
@@ -140,7 +141,6 @@ export const EventsView: React.FC = () => {
       </div>
     </div>
   );
-
   const StatsBar = () => {
     const totalEvents = events?.length;
     const filteredCount = filteredEvents?.length;
@@ -160,7 +160,7 @@ export const EventsView: React.FC = () => {
               <div className="text-sm text-gray-600">Upcoming</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-accent-600">{featuredCount}</div>
+              <div className="text-2xl font-bold text-secondary-600">{featuredCount}</div>
               <div className="text-sm text-gray-600">Featured</div>
             </div>
             <div className="text-center">
@@ -225,7 +225,7 @@ export const EventsView: React.FC = () => {
               {selectedEvent.category}
             </span>
             {selectedEvent.featured && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-100 text-accent-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800">
                 Featured
               </span>
             )}
@@ -247,19 +247,7 @@ export const EventsView: React.FC = () => {
       <StatsBar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isFiltersOpen && (
-          <div className="mb-8">
-            <DateFilterBar
-              year={filters.year}
-              month={filters.month}
-              day={filters.day}
-              onYearChange={(year) => handleFilterDate(year, filters.month, filters.day)}
-              onMonthChange={(month) => handleFilterDate(filters.year, month, filters.day)}
-              onDayChange={(day) => handleFilterDate(filters.year, filters.month, day)}
-              onClear={handleClearFilters}
-            />
-          </div>
-        )}
+
 
         {hasActiveFilters && (
           <div className="mb-6 flex flex-wrap items-center gap-2">

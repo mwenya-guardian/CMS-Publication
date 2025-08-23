@@ -26,7 +26,13 @@ api.interceptors.request.use(
 
 // Response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if(response) {
+      return response;
+    }
+    localStorage.clear();
+    return Promise.reject(response);
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');

@@ -5,6 +5,7 @@ import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { ImageUploader } from '../common/ImageUploader';
 import { Save, X } from 'lucide-react';
+import { eventService } from '../../services/eventService';
 
 interface EventFormProps {
   event?: Event;
@@ -155,6 +156,7 @@ export const EventForm: React.FC<EventFormProps> = ({
             value={formData.imageUrl}
             onChange={(url) => handleInputChange('imageUrl', url)}
             onRemove={() => handleInputChange('imageUrl', '')}
+            onUpload={eventService.uploadImage}
           />
         </div>
       </div>

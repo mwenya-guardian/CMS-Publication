@@ -6,6 +6,7 @@ interface ImageUploaderProps {
   value?: string;
   onChange: (url: string) => void;
   onRemove: () => void;
+  onUpload?: (file: File) => Promise<string>; // New prop for upload function
   className?: string;
   accept?: string;
   maxSize?: number; // in MB
@@ -15,6 +16,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   value,
   onChange,
   onRemove,
+  onUpload,
   className = '',
   accept = 'image/*',
   maxSize = 5,
@@ -33,9 +35,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setError('');
 
     try {
-      // For demo purposes, we'll create a local URL
-      // In a real app, you'd upload to your server/cloud storage
-      const url = URL.createObjectURL(file);
+      let url: string;
+      
+      if (onUpload) {
+        // Use the provided upload function to upload to backend
+        url = await onUpload(file);
+      } else {
+        // Fallback to local URL for demo purposes
+        url = URL.createObjectURL(file);
+      }
+      
       onChange(url);
     } catch (err) {
       setError('Failed to upload image');
