@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileText, Calendar, Quote, Star, BookOpen, MapPin, Phone, Mail, Globe  } from 'lucide-react';
+import { ArrowRight, FileText, Calendar, Quote, Star, BookOpen, UserCircle } from 'lucide-react';
 import { mockChurchDetails, mockPastoralTeam } from '../../data/mockData';
 import { Publication } from '../../types/Publication';
 import { Event } from '../../types/Event';
@@ -20,8 +20,11 @@ import { BulletinCard } from '../../components/bulletin/BulletinCard';
 import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 import { preloadImage } from '../../utils/imageCache';
 import { Member } from '../../types/Members';
+import { Modal } from '../../components/common/Modal';
+import { newsletterService } from '../../services/newsletterService';
+import { NewsletterSubscriberCard } from '../../components/newsletterSubscriber/NewsletterSubscriberCard';
 
-const HERO_ROTATE_INTERVAL_MS = 5000;
+const HERO_ROTATE_INTERVAL_MS = 5500;
 
 export const Home: React.FC = () => {
   const [featuredPublications, setFeaturedPublications] = useState<Publication[]>([]);
@@ -33,6 +36,8 @@ export const Home: React.FC = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [subscribe, setSubscribe] = useState(false);
+  const [email, setEmail] = useState('');
   const rotateRef = useRef<number | null>(null);
   const fetchedRef = useRef(false);
 
@@ -51,7 +56,7 @@ export const Home: React.FC = () => {
     },
     {
       id: 'slide-2',
-      title: 'Welcome Message',
+      title: 'Welcome',
       subtitle: '',
       description:
         'Welcome to University Seventh-day Adventist Church.' +
@@ -69,7 +74,7 @@ export const Home: React.FC = () => {
       title: 'Our Mission',
       subtitle: '',
       description:
-        'Our Mission is the Proclamation of the Everlasting Gospel of' +
+        'Our Mission is the Proclamation of the Everlasting Gospel of ' +
         'Jesus Christ in and around our territorial neighborhood. through Evangelism, ' +
         'Nurture and Stewardship. May God less you as we worship together in Spirit and Truth!',
       image: sdalogo,
@@ -77,6 +82,14 @@ export const Home: React.FC = () => {
       ctaLink: '/register',
     },
   ];
+
+  const handleSubscribe = (userEmail: string)=>{
+    if(userEmail.length > 0){
+      newsletterService.subscribe({ email: userEmail });
+      setSubscribe(true);
+    }
+  }
+
 
   console.log('Home render - currentSlide');
 
@@ -153,6 +166,9 @@ export const Home: React.FC = () => {
         setFeaturedQuotes(quotesWithBlobs);
 
         setPastoralTeam(pastoral);
+
+        setSubscribe(false);
+        setEmail('');
 
         // latestBulletins left empty unless bulletinService is enabled (keeps parity with original)
       } catch (error) {
@@ -236,14 +252,14 @@ export const Home: React.FC = () => {
                 <p className="text-lg text-gray-600 mb-6 max-w-prose">{slides[currentSlide].description}</p>
 
                 <div className="flex items-center gap-4">
-                  <Link to={slides[currentSlide].ctaLink}>
-                    <Button variant="solid" size="lg">
+                  <a href="#newsletter-signup">
+                    <Button variant="ghost" size="lg">
                       {slides[currentSlide].ctaLabel}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                  </Link>
+                  </a>
                   <Link to="/about">
-                    <Button variant="solid" size="lg">
+                    <Button variant="ghost" size="lg">
                       Contact Us
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -321,12 +337,12 @@ export const Home: React.FC = () => {
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="bg-white rounded-lg shadow-sm py-6 px-6 flex flex-col lg:flex-row items-center justify-between gap-6">
           <div>
-            <h3 className="text-xl font-semibold text-gray-800 text-bold">Pastoral Team</h3>
-            <p className="text-sm text-gray-500">We have been working with some Fortune 500+ clients</p>
+            <h2 className="text-xl font-semibold text-gray-800 text-bold">Pastoral Team</h2>
+            <p className="text-sm text-gray-500">We are proud of how hard working pastoral team</p>
           </div>
           <div className="flex items-center gap-6 overflow-x-auto py-2">
             <img src={sdalogo} alt="client" className="h-10 object-contain" />
-            <div className="h-10 w-24 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-600">Logo</div>
+            {/* <div className="h-10 w-24 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-600">Logo</div> */}
           </div>
         </div>
       </div>
@@ -339,7 +355,10 @@ export const Home: React.FC = () => {
               pastoralTeam.map((member) => (
                 <div key={member.id} className="bg-white rounded-lg p-3 flex flex-col items-center gap-2 shadow-sm">
                   <div className="w-full md:w-48">
-                  <img src={member.photoUrl} alt={member.firstname} className="w-40 h-40 rounded-full mx-auto" />
+                  {member.photoUrl ? <img src={member.photoUrl} alt={member.firstname} className="w-40 h-40 rounded-full mx-auto" /> : 
+                  <div className="w-40 h-40 rounded-full bg-gray-50 flex items-center justify-center text-7xl font-semibold text-gray-600" > 
+                    {member.firstname?.charAt(0).toUpperCase() ?? 'U'}
+                  </div>}
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-gray-900 mx-auto">{member.firstname.toUpperCase()} {member.lastname.toUpperCase()}</div>
@@ -349,27 +368,6 @@ export const Home: React.FC = () => {
                 </div>
               ))
             }
-          
-
-          {/* <div className="bg-white rounded-lg p-6 flex items-center gap-4 shadow-sm">
-            <div className="w-full md:w-48">
-              <img src={sdalogo} alt="Newsletter Logo" className="w-32 rounded-full mx-auto" />
-            </div>
-  
-          </div>
-
-          <div className="bg-white rounded-lg p-6 flex items-center gap-4 shadow-sm">
-            <div className="w-full md:w-48">
-              <img src={sdalogo} alt="Newsletter Logo" className="w-32 rounded-full mx-auto" />
-            </div>            
-            <div className="p-3 bg-green-50 rounded-md">
-              <BookOpen className="w-6 h-6 text-secondary-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">1,926,436</div>
-              <div className="text-sm text-gray-500">Publications</div>
-            </div>
-          </div> */}
         </div>
       </div>
 
@@ -476,22 +474,27 @@ export const Home: React.FC = () => {
             <p className="text-green-100 mb-4 max-w-xl">
               Subscribe to our newsletter to receive updates about events, announcements, and church news.
             </p>
-            <div className="flex gap-3">
+            <form id='newsletter-signup' onSubmit={(e) => { e.preventDefault(); handleSubscribe(email); }} className="flex gap-3">
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 aria-label="Enter your email address"
                 placeholder="Enter your email address"
                 className="px-4 py-2 rounded-md text-gray-800 w-full max-w-md"
+                required
               />
-              <button className="bg-white text-secondary-600 px-4 py-2 rounded-md font-medium">
+              <Button type='submit' variant='outline'  className="bg-white text-secondary-600 px-4 py-2 rounded-md font-medium">
                 Subscribe
-              </button>
-            </div>
+              </Button>
+            </form>
           </div>
-
-          {/* <div className="w-full md:w-48">
-            <img src={sdalogo} alt="Newsletter Logo" className="w-32 rounded-full mx-auto" />
-          </div> */}
+          <NewsletterSubscriberCard
+            email={email}
+            setEmail={setEmail}
+            subscribe={subscribe}
+            setSubscribe={setSubscribe}
+          />
         </div>
       </div>
 

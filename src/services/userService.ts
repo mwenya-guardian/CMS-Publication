@@ -6,6 +6,7 @@ import { ApiResponse, PaginatedResponse, FilterOptions } from '../types/Common';
 export const userService = {
   async getAll(filters?: FilterOptions): Promise<User[]> {
     const response = await api.get<ApiResponse<User[]>>('/users', { params: filters });
+    // console.log(`UserService Pulled: ${response.data.data.length}`);
     return response.data.data;
   },
 

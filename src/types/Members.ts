@@ -5,7 +5,7 @@ export interface Member {
     lastname: string;
     positionType: string;
     photoUrl?: string;
-    email: string;
+    email?: string;
     phone?: string;
 }
 export interface CreateMemberRequest {

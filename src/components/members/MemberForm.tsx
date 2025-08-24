@@ -121,6 +121,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           value={formData.firstname}
           onChange={(v) => handleInputChange('firstname', v)}
           placeholder="Enter first name"
+          required
         />
 
         <Input
@@ -128,6 +129,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           value={formData.lastname}
           onChange={(v) => handleInputChange('lastname', v)}
           placeholder="Enter last name"
+          required
         />
 
         <Input
@@ -135,6 +137,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           value={formData.position}
           onChange={(v) => handleInputChange('position', v)}
           placeholder="e.g., Senior Pastor"
+          required
         />
 
         <Input
@@ -142,6 +145,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           value={formData.positionType || ''}
           onChange={(v) => handleInputChange('positionType', v)}
           placeholder="e.g., Pastor"
+          required
         />
 
         <Input
@@ -150,6 +154,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           value={formData.email}
           onChange={(v) => handleInputChange('email', v)}
           placeholder="email@example.org"
+          required
         />
 
         <Input
@@ -158,6 +163,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           value={formData.phone}
           onChange={(v) => handleInputChange('phone', v)}
           placeholder="0960 502 235"
+          required
         />
 
         <div className="md:col-span-2">

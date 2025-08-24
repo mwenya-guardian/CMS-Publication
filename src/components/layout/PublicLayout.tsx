@@ -49,8 +49,8 @@ export const PublicLayout: React.FC = () => {
                     to={item.href}
                     className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                       isActive
-                        ? 'text-primary-700 bg-primary-50'
-                        : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                        ? 'text-primary-600 bg-gradient-to-r from-white to-accent-50'
+                        : 'text-gray-700 hover:text-primary-400 hover:bg-gray-50'
                     }`}
                   >
                     <Icon className="mr-2 h-4 w-4" />

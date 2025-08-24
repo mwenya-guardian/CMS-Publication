@@ -7,7 +7,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { bulletinService } from '../../services/bulletinService';
 import { LayoutType, FilterOptions } from '../../types/Common';
 import { dateUtils } from '../../utils/dateUtils';
-import { Calendar, Clock, Users, Book, FileText, Eye, Download, Plus } from 'lucide-react';
+import { Calendar, Clock, Users, Book, FileText, Eye, Download, Plus, BookOpen } from 'lucide-react';
 
 export const BulletinsView: React.FC = () => {
   const [bulletins, setBulletins] = useState<ChurchBulletin[]>([]);
@@ -179,12 +179,16 @@ export const BulletinsView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-1 p-3">
+    <div className="space-y-1 p-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Church Bulletins</h1>
-          <p className="text-sm text-gray-600">View and manage church bulletins</p>
+      <div className=' '>
+      <div className="flex justify-between items-center mb-2">
+        <div className='flex flex-row'>
+          <p className="bg-white/10 rounded-full backdrop-blur-sm pt-1.5 pr-4">
+            <BookOpen className="h-12 w-12 text-primary-600" />
+          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-primary-500 mb-2">Church Bulletins</h1>
+          
         </div>
         <div className="flex space-x-2">
           <Button
@@ -199,6 +203,9 @@ export const BulletinsView: React.FC = () => {
           </Button>
         </div>
       </div>
+      </div>
+      <h2 className="text-lg font-bold text-gray-600 mb-6   ">Explore our church bulletins and schedules</h2>
+
 
       {/* Empty state */}
       {bulletins.length === 0 ? (

@@ -22,6 +22,7 @@ import { BulletinsPage } from './pages/admin/BulletinsPage';
 import { MembersPage } from './pages/admin/MemberPage'; 
 import {  GivingPage } from './pages/admin/GivingPage';
 import { UsersPage } from './pages/admin/UserPage';
+import { ChurchDetailsPage } from './pages/admin/ChurchDetailsPage';
 // Auth Pages
 import { Login } from './pages/auth/Login';
 
@@ -57,6 +58,7 @@ function App() {
             <Route path="members" element={<MembersPage />} />
             <Route path="giving" element={<GivingPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="church-details" element={<ChurchDetailsPage />} />
           </Route>
 
           {/* Catch all route - redirect to home */}

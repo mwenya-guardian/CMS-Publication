@@ -47,7 +47,7 @@ export const UserList: React.FC<UserListProps> = ({
   if (!users || users.length === 0) return renderEmpty();
 
   const UserCard: React.FC<{ user: User; layout: LayoutType }> = ({ user, layout }) => {
-    const fullName = `${user.firstname ?? ''} ${user.lastname ?? ''}`.trim() || user.email;
+    const fullName = `${ user.firstname ? (user.firstname?.charAt(0).toUpperCase() + user.firstname?.slice(1)) : ''} ${ user.lastname ? (user.lastname?.charAt(0).toUpperCase() + user.lastname?.slice(1)) : ''}`.trim() || user.email;
     const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never';
 
     return (
@@ -58,7 +58,7 @@ export const UserList: React.FC<UserListProps> = ({
       >
         <div className={`p-4 flex items-center justify-center ${layout === 'list' ? 'w-1/4' : ''}`}>
           <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center text-xl font-semibold text-gray-600">
-            {user.firstname?.charAt(0) ?? 'U'}
+            {user.firstname?.charAt(0).toUpperCase() ?? 'U'}
           </div>
         </div>
 

@@ -1,8 +1,8 @@
 export interface User {
   id?: string;
-  email: string;
-  firstname: string;
-  lastname: string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
   // password should not normally be returned by APIs, but included here for forms only (optional)
   password?: string;
   role?: UserRole;

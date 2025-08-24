@@ -33,6 +33,7 @@ export const UsersPage: React.FC = () => {
     try {
       setIsLoading(true);
       const data = await userService.getAll();
+      console.log(`Users Data: ${data}`);
       setUsers(data ?? []);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -42,6 +43,7 @@ export const UsersPage: React.FC = () => {
   };
 
   const applyFilters = () => {
+    console.log(`Users Initial: ${users}`);
     let list = [...users];
 
     // text search across name/email
@@ -59,7 +61,9 @@ export const UsersPage: React.FC = () => {
       list = list.filter(u => (u.role ?? '').toUpperCase() === role);
     }
 
+    console.log(`Users Pulled: ${list}`);
     setFilteredUsers(list);
+    console.log(`Users filtered: ${filteredUsers}`);
   };
 
   const handleCreate = () => {
