@@ -11,7 +11,7 @@ export const userService = {
   },
 
   async getPaginated(page: number = 1, size: number = 10, filters?: FilterOptions): Promise<PaginatedResponse<User>> {
-    const response = await api.get<ApiResponse<PaginatedResponse<User>>>('/users/paginated', {
+    const response = await api.get<ApiResponse<PaginatedResponse<User>>>('/users', {
       params: { page, size, ...filters }
     });
     return response.data.data;

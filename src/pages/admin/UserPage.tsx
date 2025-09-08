@@ -32,7 +32,7 @@ export const UsersPage: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const data = await userService.getAll();
+      const data = (await userService.getPaginated(1, 10)).data;
       console.log(`Users Data: ${data}`);
       setUsers(data ?? []);
     } catch (err) {
@@ -162,7 +162,7 @@ export const UsersPage: React.FC = () => {
                 <option value="ADMIN">Admin</option>
                 <option value="EDITOR">Editor</option>
                 <option value="USER">User</option>
-                <option value="VIEWER">Viewer</option>
+                {/* <option value="VIEWER">Viewer</option> */}
               </select>
 
               <Button variant="ghost" onClick={handleClearFilters}>Clear</Button>
@@ -198,7 +198,7 @@ export const UsersPage: React.FC = () => {
           setSelectedUser(undefined);
         }}
         title={selectedUser ? 'Edit User' : 'Create User'}
-        size="lg"
+        size="xl"
       >
         <UserForm
           user={selectedUser}

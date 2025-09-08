@@ -114,8 +114,8 @@ export const ChurchDetailsList: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Button variant="outline" size="sm" icon={Edit} onClick={() => handleEdit(item)}>Edit</Button>
-                  <Button variant="outline" size="sm" icon={Trash2} className="text-red-600" onClick={() => handleDelete(item)}>Delete</Button>
+                  <Button variant="ghost" size="sm" icon={Edit} onClick={() => handleEdit(item)} />
+                  <Button variant="ghost" size="sm" icon={Trash2} className="text-red-600" onClick={() => handleDelete(item)} />
                 </div>
               </div>
 

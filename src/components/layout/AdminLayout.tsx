@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 import { 
@@ -8,11 +8,9 @@ import {
   FileText, 
   Calendar, 
   Quote, 
-  Settings, 
   BookOpen,
   LogOut,
   User,
-  Bell,
   HandHeart,
   UserCog,
   Church
@@ -20,25 +18,43 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
 
-const navigation = [
+let navigation = [
   { name: 'Dashboard', href: '/admin', icon: Home },
   { name: 'Publications', href: '/admin/publications', icon: FileText },
   { name: 'Events', href: '/admin/events', icon: Calendar },
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
-  { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
-  { name: 'Members', href: '/admin/members', icon: User },
-  { name: 'Users', href: '/admin/users', icon: UserCog },
-  { name: 'Giving', href: '/admin/giving', icon: HandHeart },
-  // { name: 'Settings', href: '/admin/settings', icon: Settings },
-  { name: 'Church', href: '/admin/church-details', icon: Church },
-
 ];
+
 
 export const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  if(user == null || user.role == 'VIEWER' || user.role == 'USER') {
+      navigate('/');
+  }
+
+  if (user?.role?.toUpperCase() == 'ADMIN') {
+      navigation = [
+        { name: 'Dashboard', href: '/admin', icon: Home },
+        { name: 'Publications', href: '/admin/publications', icon: FileText },
+        { name: 'Events', href: '/admin/events', icon: Calendar },
+        { name: 'Quotes', href: '/admin/quotes', icon: Quote },   
+        { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
+        { name: 'Members', href: '/admin/members', icon: User },
+        { name: 'Users', href: '/admin/users', icon: UserCog },
+        { name: 'Giving', href: '/admin/giving', icon: HandHeart },
+        // { name: 'Settings', href: '/admin/settings', icon: Settings },
+        { name: 'Church', href: '/admin/church-details', icon: Church },];
+    }
+
+
+
+  useEffect(() => {
+    
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -66,7 +82,7 @@ export const AdminLayout: React.FC = () => {
         >
           <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
             <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-              <h1 className="text-xl font-semibold text-gray-900">CMS Admin</h1>
+              <h1 className="text-xl font-semibold text-gray-900">CMS</h1>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -102,7 +118,7 @@ export const AdminLayout: React.FC = () => {
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
           <div className="flex items-center h-16 px-4 border-b border-gray-200">
-            <h1 className="text-xl font-semibold text-gray-900">CMS Admin</h1>
+            <h1 className="text-xl font-semibold text-gray-900">CMS Administration</h1>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-1">
             {navigation.map((item) => {
@@ -136,15 +152,24 @@ export const AdminLayout: React.FC = () => {
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              icon={LogOut}
-              className="w-full mt-2 justify-start"
-            >
-              Sign out
-            </Button>
+            <div className="space-y-2">
+              <Link
+                to="/user"
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
+              >
+                <User className="mr-3 h-4 w-4" />
+                User Dashboard
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                icon={LogOut}
+                className="w-full justify-start"
+              >
+                Sign out
+              </Button>
+            </div>
           </div>
         </div>
       </div>

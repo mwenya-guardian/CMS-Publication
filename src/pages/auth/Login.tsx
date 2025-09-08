@@ -18,8 +18,17 @@ export const Login: React.FC = () => {
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    const from = (location.state as any)?.from?.pathname || '/admin';
-    return <Navigate to={from} replace />;
+    const from = (location.state as any)?.from?.pathname;
+    if (from) {
+      return <Navigate to={from} replace />;
+    }
+    // Redirect based on user role
+    const user = (location.state as any)?.user;
+    if (user?.role === 'USER') {
+      return <Navigate to="/user" replace />;
+    } else {
+      return <Navigate to="/admin" replace />;
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -73,9 +73,9 @@ export default function GivingList({
             </div>
 
             {isAdmin && (
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-1">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -83,10 +83,10 @@ export default function GivingList({
                   }}
                   icon={Edit}
                 >
-                  Edit
+                  {/* Edit */}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -95,7 +95,7 @@ export default function GivingList({
                   icon={Trash2}
                   className="text-red-600"
                 >
-                  Delete
+                  {/* Delete */}
                 </Button>
               </div>
             )}

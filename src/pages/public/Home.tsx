@@ -14,17 +14,14 @@ import { EventCard } from '../../components/events/EventCard';
 import { QuoteCard } from '../../components/quotes/QuoteCard';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-// import { bulletinService } from '../../services/bulletinService';
 import { ChurchBulletin } from '../../types/ChurchBulletin';
-import { BulletinCard } from '../../components/bulletin/BulletinCard';
 import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 import { preloadImage } from '../../utils/imageCache';
 import { Member } from '../../types/Members';
-import { Modal } from '../../components/common/Modal';
 import { newsletterService } from '../../services/newsletterService';
 import { NewsletterSubscriberCard } from '../../components/newsletterSubscriber/NewsletterSubscriberCard';
 
-const HERO_ROTATE_INTERVAL_MS = 5500;
+const HERO_ROTATE_INTERVAL_MS = 5900;
 
 export const Home: React.FC = () => {
   const [featuredPublications, setFeaturedPublications] = useState<Publication[]>([]);
@@ -355,10 +352,10 @@ export const Home: React.FC = () => {
               pastoralTeam.map((member) => (
                 <div key={member.id} className="bg-white rounded-lg p-3 flex flex-col items-center gap-2 shadow-sm">
                   <div className="w-full md:w-48">
-                  {member.photoUrl ? <img src={member.photoUrl} alt={member.firstname} className="w-40 h-40 rounded-full mx-auto" /> : 
-                  <div className="w-40 h-40 rounded-full bg-gray-50 flex items-center justify-center text-7xl font-semibold text-gray-600" > 
+                  {member.photoUrl ? <img src={member.photoUrl} alt={member.firstname + ' ' + member.lastname} className="flex text-center justify-between w-40 h-40 rounded-full mx-auto" /> : 
+                  <span className="w-40 h-40 rounded-full bg-gray-50 mx-auto flex items-center justify-center text-7xl font-semibold text-gray-600" > 
                     {member.firstname?.charAt(0).toUpperCase() ?? 'U'}
-                  </div>}
+                  </span>}
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-gray-900 mx-auto">{member.firstname.toUpperCase()} {member.lastname.toUpperCase()}</div>
@@ -408,11 +405,18 @@ export const Home: React.FC = () => {
           >
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-6 lg:px-8">
               {upcomingEvents.map((event) => (
+              <div className="relative" key={event.id}>
+                <div className="absolute -top-2 -right-2 z-10">
+                  <div className="bg-green-600 text-white p-2 rounded-full">
+                    <Star className="h-4 w-4" />
+                 </div>
+              </div>
                 <EventCard
                   key={event.id}
                   event={event}
                   onView={() => {}}
                 />
+                </div>
               ))}
             </div>
           </FeaturedSection>
@@ -439,27 +443,6 @@ export const Home: React.FC = () => {
                     onView={() => {}}
                   />
                 </div>
-              ))}
-            </div>
-          </FeaturedSection>
-        )}
-
-        {/* Latest Bulletins */}
-        {latestBulletins.length > 0 && (
-          <FeaturedSection
-            title="Latest Church Bulletins"
-            description="Stay updated with our weekly church bulletins and worship schedules"
-            icon={BookOpen}
-            viewAllLink="/bulletins"
-          >
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-6 lg:px-8">
-              {latestBulletins.map((bulletin) => (
-                <BulletinCard
-                  key={bulletin.id}
-                  bulletin={bulletin}
-                  onView={() => {}}
-                  onDownloadPdf={() => {}}
-                />
               ))}
             </div>
           </FeaturedSection>

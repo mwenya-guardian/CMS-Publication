@@ -71,9 +71,9 @@ export const UserList: React.FC<UserListProps> = ({
             </div>
 
             {isAdmin && (
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-1">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -81,10 +81,10 @@ export const UserList: React.FC<UserListProps> = ({
                   }}
                   icon={Edit}
                 >
-                  Edit
+                  {/* Edit */}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -93,7 +93,7 @@ export const UserList: React.FC<UserListProps> = ({
                   icon={Trash2}
                   className="text-red-600"
                 >
-                  Delete
+                  {/* Delete */}
                 </Button>
               </div>
             )}

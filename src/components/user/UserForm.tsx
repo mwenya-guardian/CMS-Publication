@@ -109,7 +109,7 @@ export const UserForm: React.FC<UserFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Input
           label="First Name"

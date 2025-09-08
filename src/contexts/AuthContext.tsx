@@ -65,6 +65,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const loginResponse = await authService.login(credentials);
       authService.storeAuthData(loginResponse);
       setUser(loginResponse.user);
+      
+      // Redirect based on user role after successful login
+      if (loginResponse.user.role === 'USER') {
+        window.location.href = '/user';
+      } else {
+        window.location.href = '/admin';
+      }
     } finally {
       setIsLoading(false);
     }
