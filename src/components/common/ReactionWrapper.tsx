@@ -182,7 +182,7 @@ export const ReactionWrapper: React.FC<ReactionWrapperProps> = ({
             disabled={isLoading}
           /> */}
         </div>
-x
+
         {/* Comments section */}
         <CommentSection
           className="flex items-center space-x-6 px-2"

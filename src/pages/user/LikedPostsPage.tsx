@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { PostCard } from '../../components/posts/PostCard';
-import { Pagination } from '../../components/common/Pagination';
 import { Post } from '../../types/Post';
 import { postService } from '../../services/postService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -10,10 +9,17 @@ export const LikedPostsPage: React.FC = () => {
   const [likedPosts, setLikedPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  
+  // Buffer management states
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(true);
 
   useEffect(() => {
-    loadLikedPosts();
+    if (page === 1) {
+      loadLikedPosts();
+    } else {
+      loadMoreLikedPosts();
+    }
   }, [page]);
 
   const loadLikedPosts = async () => {
@@ -21,13 +27,13 @@ export const LikedPostsPage: React.FC = () => {
     try {
       // For now, we'll get all posts and filter those with user reactions
       // In a real implementation, you'd have a specific endpoint for liked posts
-      const response = await postService.getPeginated(page, 10);
+      const response = await postService.getPeginated(page, 5);
       const allPosts = response.data || [];
       
       // Filter posts that the user has reacted to
       const liked = allPosts.filter(post => post.userReaction);
       setLikedPosts(liked);
-      setTotalPages(response.pagination?.totalPages || 1);
+      setHasMoreData(liked.length === 5);
     } catch (error) {
       console.error('Failed to load liked posts:', error);
     } finally {
@@ -35,12 +41,46 @@ export const LikedPostsPage: React.FC = () => {
     }
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+  const loadMoreLikedPosts = async () => {
+    setIsLoadingMore(true);
+    try {
+      const response = await postService.getPeginated(page, 5);
+      const allPosts = response.data || [];
+      
+      // Filter posts that the user has reacted to
+      const liked = allPosts.filter(post => post.userReaction);
+      
+      setLikedPosts(prevLikedPosts => {
+        const combined = [...prevLikedPosts, ...liked];
+        // Keep only the last 15 items if we exceed the buffer
+        return combined.length > 15 ? combined.slice(-15) : combined;
+      });
+      
+      setHasMoreData(liked.length === 5);
+    } catch (error) {
+      console.error('Failed to load more liked posts:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
+
 
   const handleReactionChange = () => {
     loadLikedPosts(); // Reload to get updated list
+  };
+
+  const loadMoreData = () => {
+    if (isLoadingMore || !hasMoreData) return;
+    setPage(prev => prev + 1);
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+    
+    if (isNearBottom && hasMoreData && !isLoadingMore) {
+      loadMoreData();
+    }
   };
 
   if (isLoading) {
@@ -67,7 +107,10 @@ export const LikedPostsPage: React.FC = () => {
       </div>
 
       {/* Liked Posts */}
-      <div className="space-y-4">
+      <div 
+        className="space-y-4 max-h-96 overflow-y-auto"
+        onScroll={handleScroll}
+      >
         {likedPosts.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
             <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
@@ -77,25 +120,32 @@ export const LikedPostsPage: React.FC = () => {
             </p>
           </div>
         ) : (
-          likedPosts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onReactionChange={handleReactionChange}
-            />
-          ))
+          <>
+            {likedPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onReactionChange={handleReactionChange}
+              />
+            ))}
+            
+            {/* Loading more indicator */}
+            {isLoadingMore && (
+              <div className="flex justify-center items-center py-4">
+                <LoadingSpinner />
+                <span className="ml-2 text-gray-500">Loading more...</span>
+              </div>
+            )}
+
+            {/* No more data indicator */}
+            {!hasMoreData && (
+              <div className="text-center py-4 text-gray-500">
+                No more liked posts available
+              </div>
+            )}
+          </>
         )}
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          isLoading={isLoading}
-        />
-      )}
     </div>
   );
 };

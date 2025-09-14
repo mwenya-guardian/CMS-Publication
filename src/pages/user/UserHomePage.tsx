@@ -4,7 +4,6 @@ import { EventCard } from '../../components/events/EventCard';
 import { QuoteCard } from '../../components/quotes/QuoteCard';
 import { PublicationCard } from '../../components/publications/PublicationCard';
 import { ReactionWrapper } from '../../components/common/ReactionWrapper';
-import { Pagination } from '../../components/common/Pagination';
 import { Post } from '../../types/Post';
 import { Event } from '../../types/Event';
 import { Quote } from '../../types/Quote';
@@ -30,74 +29,128 @@ export const UserHome: React.FC = () => {
   const [quotesPage, setQuotesPage] = useState(1);
   const [publicationsPage, setPublicationsPage] = useState(1);
   
-  const [postsTotalPages, setPostsTotalPages] = useState(1);
-  const [eventsTotalPages, setEventsTotalPages] = useState(1);
-  const [quotesTotalPages, setQuotesTotalPages] = useState(1);
-  const [publicationsTotalPages, setPublicationsTotalPages] = useState(1);
+
+  // Buffer management states
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState({
+    posts: true,
+    events: true,
+    quotes: true,
+    publications: true
+  });
 
   useEffect(() => {
     loadData();
-  }, [activeTab, postsPage, eventsPage, quotesPage, publicationsPage]);
+  }, [activeTab]);
 
-  const loadData = async () => {
-    setIsLoading(true);
+  useEffect(() => {
+    if (postsPage > 1 || eventsPage > 1 || quotesPage > 1 || publicationsPage > 1) {
+      loadData(true);
+    }
+  }, [postsPage, eventsPage, quotesPage, publicationsPage]);
+
+  const loadData = async (isLoadMore = false) => {
+    if (isLoadMore) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+    }
+    
     try {
       if (activeTab === 'posts') {
         const postsData = await postService.getPeginated(postsPage, 5);
-        setPosts(postsData.data || []);
-        setPostsTotalPages(postsData.pagination?.totalPages || 1);
+        const newPosts = postsData.data || [];
+        
+        if (isLoadMore) {
+          setPosts(prevPosts => {
+            const combined = [...prevPosts, ...newPosts];
+            // Keep only the last 15 items if we exceed the buffer
+            return combined.length > 15 ? combined.slice(-15) : combined;
+          });
+        } else {
+          setPosts(newPosts);
+        }
+        
+        setHasMoreData(prev => ({ ...prev, posts: newPosts.length === 5 }));
       } else if (activeTab === 'events') {
         const eventsData = await eventService.getPaginated(eventsPage, 5);
-        setEvents(eventsData.data || []);
-        setEventsTotalPages(1); // Assuming no pagination for events for now
+        const newEvents = eventsData.data || [];
+        
+        if (isLoadMore) {
+          setEvents(prevEvents => {
+            const combined = [...prevEvents, ...newEvents];
+            return combined.length > 15 ? combined.slice(-15) : combined;
+          });
+        } else {
+          setEvents(newEvents);
+        }
+        
+        setHasMoreData(prev => ({ ...prev, events: newEvents.length === 5 }));
       } else if (activeTab === 'quotes') {
         const quotesData = await quoteService.getPaginated(quotesPage, 5);
-        setQuotes(quotesData.data || []);
-        setQuotesTotalPages(1); // Assuming no pagination for quotes for now
+        const newQuotes = quotesData.data || [];
+        
+        if (isLoadMore) {
+          setQuotes(prevQuotes => {
+            const combined = [...prevQuotes, ...newQuotes];
+            return combined.length > 15 ? combined.slice(-15) : combined;
+          });
+        } else {
+          setQuotes(newQuotes);
+        }
+        
+        setHasMoreData(prev => ({ ...prev, quotes: newQuotes.length === 5 }));
       } else if (activeTab === 'publications') {
         const publicationsData = await publicationService.getPaginated(publicationsPage, 5);
-        setPublications(publicationsData.data || []);
-        setPublicationsTotalPages(1); // Assuming no pagination for publications for now
+        const newPublications = publicationsData.data || [];
+        
+        if (isLoadMore) {
+          setPublications(prevPublications => {
+            const combined = [...prevPublications, ...newPublications];
+            return combined.length > 15 ? combined.slice(-15) : combined;
+          });
+        } else {
+          setPublications(newPublications);
+        }
+        
+        setHasMoreData(prev => ({ ...prev, publications: newPublications.length === 5 }));
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
 
-  const handlePageChange = (page: number) => {
+
+  const loadMoreData = async () => {
+    if (isLoadingMore) return;
+    
+    const currentHasMore = hasMoreData[activeTab];
+    if (!currentHasMore) return;
+
     if (activeTab === 'posts') {
-      setPostsPage(page);
+      setPostsPage(prev => prev + 1);
     } else if (activeTab === 'events') {
-      setEventsPage(page);
+      setEventsPage(prev => prev + 1);
     } else if (activeTab === 'quotes') {
-      setQuotesPage(page);
+      setQuotesPage(prev => prev + 1);
     } else if (activeTab === 'publications') {
-      setPublicationsPage(page);
+      setPublicationsPage(prev => prev + 1);
     }
   };
 
-  const getCurrentPage = () => {
-    switch (activeTab) {
-      case 'posts': return postsPage;
-      case 'events': return eventsPage;
-      case 'quotes': return quotesPage;
-      case 'publications': return publicationsPage;
-      default: return 1;
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+    
+    if (isNearBottom && hasMoreData[activeTab] && !isLoadingMore) {
+      loadMoreData();
     }
   };
 
-  const getTotalPages = () => {
-    switch (activeTab) {
-      case 'posts': return postsTotalPages;
-      case 'events': return eventsTotalPages;
-      case 'quotes': return quotesTotalPages;
-      case 'publications': return publicationsTotalPages;
-      default: return 1;
-    }
-  };
 
   const tabs = [
     { id: 'posts', name: 'Posts', count: posts.length, icon: FileText },
@@ -150,14 +203,17 @@ useEffect(() => {
         </div>
 
         {/* Tab content */}
-
-        {isLoading && (
-          <div className="flex justify-center items-center h-64">
-          <LoadingSpinner />
-        </div>
-        ) || 
-        (<div className="p-6">
-          {activeTab === 'posts' && (
+        <div 
+          className="p-6 max-h-96 overflow-y-auto"
+          onScroll={handleScroll}
+        >
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <>
+              {activeTab === 'posts' && (
             <div className="space-y-4">
               {posts.length === 0 ? (
                 <div className="text-center py-8">
@@ -248,17 +304,24 @@ useEffect(() => {
               )}
             </div>
           )}
-        </div>)}
 
-        {/* Pagination */}
-        {getTotalPages() > 1 && (
-          <Pagination
-            currentPage={getCurrentPage()}
-            totalPages={getTotalPages()}
-            onPageChange={handlePageChange}
-            isLoading={isLoading}
-          />
-        )}
+              {/* Loading more indicator */}
+              {isLoadingMore && (
+                <div className="flex justify-center items-center py-4">
+                  <LoadingSpinner />
+                  <span className="ml-2 text-gray-500">Loading more...</span>
+                </div>
+              )}
+
+              {/* No more data indicator */}
+              {!hasMoreData[activeTab] && (
+                <div className="text-center py-4 text-gray-500">
+                  No more data available
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,34 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { PostCard } from '../../components/posts/PostCard';
-import { Pagination } from '../../components/common/Pagination';
 import { Post } from '../../types/Post';
 import { postService } from '../../services/postService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { Plus, Filter } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 export const PostsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState<'all' | 'images' | 'videos' | 'text'>('all');
+  
+  // Buffer management states
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(true);
 
   useEffect(() => {
-    loadPosts();
+    if (page === 1) {
+      loadPosts();
+    } else {
+      loadMorePosts();
+    }
   }, [page, filter]);
 
   const loadPosts = async () => {
     setIsLoading(true);
     try {
-      const response = await postService.getPeginated(page, 10);
+      const response = await postService.getPeginated(page, 5);
       const newPosts = response.data || [];
       
       setPosts(newPosts);
-      setTotalPages(response.pagination?.totalPages || 1);
+      setHasMoreData(newPosts.length === 5);
     } catch (error) {
       console.error('Failed to load posts:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadMorePosts = async () => {
+    setIsLoadingMore(true);
+    try {
+      const response = await postService.getPeginated(page, 5);
+      const newPosts = response.data || [];
+      
+      setPosts(prevPosts => {
+        const combined = [...prevPosts, ...newPosts];
+        // Keep only the last 15 items if we exceed the buffer
+        return combined.length > 15 ? combined.slice(-15) : combined;
+      });
+      
+      setHasMoreData(newPosts.length === 5);
+    } catch (error) {
+      console.error('Failed to load more posts:', error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -49,8 +75,19 @@ export const PostsPage: React.FC = () => {
     }
   });
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+
+  const loadMoreData = () => {
+    if (isLoadingMore || !hasMoreData) return;
+    setPage(prev => prev + 1);
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+    
+    if (isNearBottom && hasMoreData && !isLoadingMore) {
+      loadMoreData();
+    }
   };
 
   return (
@@ -98,7 +135,10 @@ export const PostsPage: React.FC = () => {
       </div>
 
       {/* Posts */}
-      <div className="space-y-4">
+      <div 
+        className="space-y-4 max-h-96 overflow-y-auto"
+        onScroll={handleScroll}
+      >
         {isLoading && posts.length === 0 ? (
           <div className="flex justify-center items-center h-64">
             <LoadingSpinner />
@@ -123,14 +163,19 @@ export const PostsPage: React.FC = () => {
               />
             ))}
             
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                isLoading={isLoading}
-              />
+            {/* Loading more indicator */}
+            {isLoadingMore && (
+              <div className="flex justify-center items-center py-4">
+                <LoadingSpinner />
+                <span className="ml-2 text-gray-500">Loading more...</span>
+              </div>
+            )}
+
+            {/* No more data indicator */}
+            {!hasMoreData && (
+              <div className="text-center py-4 text-gray-500">
+                No more posts available
+              </div>
             )}
           </>
         )}
