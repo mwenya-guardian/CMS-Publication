@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { userService } from '../../services/userService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { Settings, User as UserIcon, Calendar, Shield } from 'lucide-react';
+import { Settings, User as UserIcon, Calendar, Shield, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '../../components/common/Button';
 
 export const SettingsPage: React.FC = () => {
   const { user, refreshUser } = useAuth();
@@ -15,8 +16,17 @@ export const SettingsPage: React.FC = () => {
     email: user?.email || '',
     dob: user?.dob || '',
   });
+  const [toAdminLink, setToAdminLink] = useState<any>(null);
 useEffect(()=>{
   console.log(`Role: ${user?.role}`);
+
+    if(user?.role?.toUpperCase() == 'ADMIN' || user?.role?.toUpperCase() == "EDITOR"){
+      setToAdminLink({ 
+        name: 'Admin',
+        href: '/admin',
+        icon: User
+      })
+    }
 }, [])
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -63,7 +73,7 @@ useEffect(()=>{
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 grid grid-cols-2">
         <div className="flex items-center space-x-3">
           <Settings className="h-8 w-8 text-blue-500" />
           <div>
@@ -71,11 +81,19 @@ useEffect(()=>{
             <p className="text-gray-600">
               Manage your account settings and preferences.
             </p>
-          </div>
-          
+          </div>  
         </div>
-        {user?.role == "ADMIN" || user?.role == "EDITOR" && <Link to={"/admin"}>Admin Page</Link>}
+        {toAdminLink && 
+        <div className="flex items-center space-x-3 flex justify-end">
+          <Link to={toAdminLink?.href}>
+            <Button variant='secondary' icon={toAdminLink?.icon}>
+              {toAdminLink?.name}
+            </Button>
+          </Link>
+        </div>
+        }
       </div>
+      
 
       {/* Profile Information */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -96,7 +114,7 @@ useEffect(()=>{
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-xl">
-                {user.firstname?.charAt(0) || 'U'}
+                {user.firstname?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
             <div>

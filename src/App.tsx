@@ -26,7 +26,7 @@ import { ChurchDetailsPage } from './pages/admin/ChurchDetailsPage';
 
 // User Pages
 import { UserLayout } from './components/layout/UserLayout';
-import { UserDashboard } from './pages/user/UserDashboard';
+import { UserHome } from './pages/user/UserHomePage';
 import { PostsPage } from './pages/user/PostsPage';
 import { BulletinsPage as UserBulletinsPage } from './pages/user/BulletinsPage';
 import { LikedPostsPage } from './pages/user/LikedPostsPage';
@@ -59,7 +59,7 @@ function App() {
               <UserLayout />
             </ProtectedRoute>
           }>
-            <Route index element={<UserDashboard />} />
+            <Route index element={<UserHome />} />
             <Route path="posts" element={<PostsPage />} />
             <Route path="bulletins" element={<UserBulletinsPage />} />
             <Route path="liked" element={<LikedPostsPage />} />

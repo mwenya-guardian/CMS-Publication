@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { ReactionButton } from '../common/ReactionButton';
 import { CommentSection } from '../common/CommentSection';
-import { Post, ReactionType, ReactionResponse } from '../../types/Post';
+import { ReactionType, ReactionResponse } from '../../types/Reaction';
+import { Post } from '../../types/Post';
 import { postService } from '../../services/postService';
+import { reactionService } from '../../services/reactionService';
 
 interface PostCardProps {
   post: Post;
@@ -21,10 +23,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
     try {
       if (post.userReaction === type) {
         // Remove reaction
-        await postService.deleteReaction('POST', post.id);
+        await reactionService.deleteReaction('POST', post.id);
       } else {
         // Add or change reaction
-        await postService.createReaction('POST', {
+        await reactionService.createReaction('POST', {
           type,
           targetId: post.id,
         });
@@ -42,8 +44,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
     
     setIsLoading(true);
     try {
-      await postService.createReaction('POST', {
-        type: 'LIKE', // Comments are treated as LIKE reactions with comment text
+      await reactionService.createReaction('POST', {
+        type: 'COMMENT',
         targetId: post.id,
         comment,
       });
@@ -122,7 +124,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
             onClick={() => handleReaction('LIKE')}
             disabled={isLoading}
           />
-          <ReactionButton
+          {/* <ReactionButton
             type="LOVE"
             count={0} // You might want to track this separately
             isActive={post.userReaction === 'LOVE'}
@@ -135,7 +137,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
             isActive={post.userReaction === 'WOW'}
             onClick={() => handleReaction('WOW')}
             disabled={isLoading}
-          />
+          /> */}
         </div>
 
         {/* Comments section */}

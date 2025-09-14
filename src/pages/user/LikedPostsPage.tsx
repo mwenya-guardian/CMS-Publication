@@ -21,7 +21,7 @@ export const LikedPostsPage: React.FC = () => {
     try {
       // For now, we'll get all posts and filter those with user reactions
       // In a real implementation, you'd have a specific endpoint for liked posts
-      const response = await postService.getPosts(page, 10);
+      const response = await postService.getPeginated(page, 10);
       const allPosts = response.data || [];
       
       // Filter posts that the user has reacted to

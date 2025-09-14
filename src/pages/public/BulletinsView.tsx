@@ -341,8 +341,8 @@ export const BulletinsView: React.FC = () => {
               </div>
 
               <div className="text-right text-sm text-gray-600">
-                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt)}</div>
-                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt)}</div>
+                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt || new Date())}</div>
+                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt || new Date())}</div>
                 {/* createdBy / updatedBy may or may not exist on the object */}
                 {(selectedBulletin as any).createdBy && <div>By: {(selectedBulletin as any).createdBy}</div>}
                 {(selectedBulletin as any).updatedBy && <div>Updated by: {(selectedBulletin as any).updatedBy}</div>}
@@ -489,8 +489,8 @@ export const BulletinsView: React.FC = () => {
             {/* Footer: metadata + actions */}
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-600">
-                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt)}</div>
-                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt)}</div>
+                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt || new Date())}</div>
+                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt || new Date())}</div>
               </div>
 
               <div className="flex items-center gap-2">

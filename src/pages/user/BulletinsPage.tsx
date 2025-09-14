@@ -15,7 +15,7 @@ export const BulletinsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedBulletin, setSelectedBulletin] = useState<ChurchBulletin | null>(null);
-  const [showModal, setShowModal] = useState<Boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   useEffect(() => {
     loadBulletins();

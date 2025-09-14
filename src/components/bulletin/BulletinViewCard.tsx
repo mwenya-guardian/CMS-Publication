@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, Clock, Edit, Trash2, Eye, Download, Send, FileText } from 'lucide-react';
+import { Calendar, MapPin, Clock, Edit, Trash2, Eye, Download, Send, FileText, User } from 'lucide-react';
 import { ChurchBulletin } from '../../types/ChurchBulletin';
 import { dateUtils } from '../../utils/dateUtils';
 import { Button } from '../common/Button';
@@ -114,7 +114,7 @@ export const BulletinViewCard: React.FC<BulletinCardProps> = ({
                         <div className="space-y-2">
                           {roleAssignments.map((r: any, ri: number) => (
                             <div key={ri} className="flex items-start gap-3 text-sm">
-                              <Users className="w-4 h-4 mt-1 text-blue-600" />
+                              <User className="w-4 h-4 mt-1 text-blue-600" />
                               <div>
                                 <div className="font-medium">{r.role || r.label || 'Role'}</div>
                                 <div className="text-gray-600">{Array.isArray(r.participates) ? r.participates.join(', ') : String(r.participates ?? '')}</div>
@@ -164,7 +164,7 @@ export const BulletinViewCard: React.FC<BulletinCardProps> = ({
                 <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
                   <h4 className="text-lg font-semibold text-gray-800 mb-1">{announcement.title}</h4>
                   <p className="text-gray-700">{announcement.content}</p>
-                  {announcement.bulletin && <div className="text-xs text-gray-500 mt-1">Related Bulletin: {announcement.bulletin.title}</div>}
+                  {announcement.content && <div className="text-xs text-gray-500 mt-1">Related Bulletin: {bulletin.title}</div>}
                 </div>
               ))}
             </div>

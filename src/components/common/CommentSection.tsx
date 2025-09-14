@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Send, MessageCircle } from 'lucide-react';
-import { ReactionResponse } from '../../types/Post';
+import { ReactionResponse } from '../../types/Reaction';
 
 interface CommentSectionProps {
+  className?: string;
   comments: ReactionResponse[];
   onAddComment: (comment: string) => void;
   isLoading?: boolean;
 }
 
 export const CommentSection: React.FC<CommentSectionProps> = ({
+  className,
   comments,
   onAddComment,
   isLoading = false,
@@ -25,13 +27,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   return (
-    <div className="border-t border-gray-200 pt-4">
+    <div className={`border-t border-gray-200 pt-4 ${className}`}>
       {/* Comment toggle button */}
       <button
         onClick={() => setShowComments(!showComments)}
         className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
       >
-        <MessageCircle className="h-4 w-4" />
+        <MessageCircle className="h-4 w-4 text-green-600" />
         <span className="text-sm font-medium">
           {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
         </span>

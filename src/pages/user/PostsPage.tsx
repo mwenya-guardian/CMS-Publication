@@ -20,7 +20,7 @@ export const PostsPage: React.FC = () => {
   const loadPosts = async () => {
     setIsLoading(true);
     try {
-      const response = await postService.getPosts(page, 10);
+      const response = await postService.getPeginated(page, 10);
       const newPosts = response.data || [];
       
       setPosts(newPosts);

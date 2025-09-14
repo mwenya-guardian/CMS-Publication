@@ -143,7 +143,7 @@ export const UserList: React.FC<UserListProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.map(u => (
             <div key={u.id} onClick={() => onView && onView(u)}>
-              <UserCard user={u} layout="grid" />
+              <UserCard key={u.id} user={u} layout="grid" />
             </div>
           ))}
         </div>
@@ -151,7 +151,7 @@ export const UserList: React.FC<UserListProps> = ({
         <div className="space-y-4">
           {users.map(u => (
             <div key={u.id} onClick={() => onView && onView(u)}>
-              <UserCard user={u} layout="list" />
+              <UserCard key={u.id} user={u} layout="list" />
             </div>
           ))}
         </div>

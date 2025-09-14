@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ReactionButton } from './ReactionButton';
 import { CommentSection } from './CommentSection';
-import { ReactionType, ReactionResponse, ReactionCategory } from '../../types/Post';
-import { postService } from '../../services/postService';
+import { ReactionType, ReactionResponse, ReactionCategory } from '../../types/Reaction';
+import { reactionService } from '../../services/reactionService';
+
 
 interface ReactionWrapperProps {
   targetId: string;
@@ -28,52 +29,62 @@ export const ReactionWrapper: React.FC<ReactionWrapperProps> = ({
   children,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [likes, setLikes] = useState(initialLikes);
-  const [dislikes, setDislikes] = useState(initialDislikes);
+  const [likes, setLikes] = useState<number>(initialLikes);
+  const [dislikes, setDislikes] = useState<number>(initialDislikes);
   const [comments, setComments] = useState<ReactionResponse[]>([]);
+  const [, setCommentCount] = useState<number>(initialComments);
   const [currentUserReaction, setCurrentUserReaction] = useState<ReactionType | undefined>(userReaction);
 
   const handleReaction = async (type: ReactionType) => {
     if (isLoading) return;
     
-    // setIsLoading(true);
+    setIsLoading(true);
     try {
       if (currentUserReaction === type) {
         // Remove reaction
-        await postService.deleteReaction(targetType, targetId);
+        await reactionService.deleteReactionByTargetAndUserAndType(targetType, targetId, type);
         setCurrentUserReaction(undefined);
-        // Update counts
+        // Optimistically update counts
         if (type === 'LIKE') {
           setLikes(prev => Math.max(0, prev - 1));
         } else if (type === 'DISLIKE') {
           setDislikes(prev => Math.max(0, prev - 1));
         }
       } else {
-        // Add or change reaction
-        await postService.createReaction(targetType, {
+        // Remove existing reaction if any
+        if (currentUserReaction) {
+          await reactionService.deleteReactionByTargetAndUserAndType(targetType, targetId, currentUserReaction);
+          // Optimistically update counts for removed reaction
+          if (currentUserReaction === 'LIKE') {
+            setLikes(prev => Math.max(0, prev - 1));
+          } else if (currentUserReaction === 'DISLIKE') {
+            setDislikes(prev => Math.max(0, prev - 1));
+          }
+        }
+        
+        // Add new reaction
+        await reactionService.createReaction(targetType, {
           type,
           targetId,
         });
-        
-        // Update previous reaction count
-        if (currentUserReaction === 'LIKE') {
-          setLikes(prev => Math.max(0, prev - 1));
-        } else if (currentUserReaction === 'DISLIKE') {
-          setDislikes(prev => Math.max(0, prev - 1));
-        }
-        
-        // Update new reaction count
+        setCurrentUserReaction(type);
+        // Optimistically update counts for new reaction
         if (type === 'LIKE') {
           setLikes(prev => prev + 1);
         } else if (type === 'DISLIKE') {
           setDislikes(prev => prev + 1);
         }
-        
-        setCurrentUserReaction(type);
       }
+      
+      // Refresh counts to ensure accuracy
+      await fetchReactions();
+      await getCurrentUserReaction();
       onReactionChange?.();
     } catch (error) {
       console.error('Failed to update reaction:', error);
+      // Revert optimistic updates on error
+      await fetchReactions();
+      await getCurrentUserReaction();
     } finally {
       setIsLoading(false);
     }
@@ -82,37 +93,64 @@ export const ReactionWrapper: React.FC<ReactionWrapperProps> = ({
   const handleAddComment = async (comment: string) => {
     if (isLoading) return;
     
-    // setIsLoading(true);
+    setIsLoading(true);
     try {
-      await postService.createReaction(targetType, {
-        type: 'COMMENT', // Comments are treated as LIKE reactions with comment text
+      await reactionService.createReaction(targetType, {
+        type: 'COMMENT',
         targetId,
         comment,
       });
-      const reaction = await postService.getReactionByType(targetType, 'COMMENT', targetId);
-      setComments(reaction);
+      // Optimistically update comment count
+      setCommentCount(prev => prev + 1);
+      
+      // Refresh comments and counts
+      const commentReactions = await reactionService.getReactionsByType(targetType, 'COMMENT', targetId);
+      setComments(commentReactions);
+      
+      // Refresh all counts to ensure accuracy
+      await fetchReactions();
       onReactionChange?.();
     } catch (error) {
       console.error('Failed to add comment:', error);
+      // Revert optimistic update on error
+      setCommentCount(prev => Math.max(0, prev - 1));
+      await fetchReactions();
     } finally {
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    const fetchReactions = async () => {
-    const [like, dislike, comment] = await Promise.all([
-      postService.getReactionByType(targetType, 'LIKE', targetId),
-      postService.getReactionByType(targetType, 'DISLIKE', targetId),
-      postService.getReactionByType(targetType, 'COMMENT', targetId),
+  const getCurrentUserReaction = async () =>{
+    const [curentUserLike, currentUserDislike] = await Promise.all([
+      reactionService.getReactionsByTypeForCurrentUser(targetType, "LIKE", targetId),
+      reactionService.getReactionsByTypeForCurrentUser(targetType, "DISLIKE", targetId)
+    ]); 
+
+    let curentReaction;
+    if(curentUserLike.length > 0){
+      curentReaction = curentUserLike[0].type;
+    } else if(currentUserDislike.length > 0){
+      curentReaction = currentUserDislike[0].type;
+    }
+    setCurrentUserReaction(curentReaction);
+    return curentReaction;
+  };
+  const fetchReactions = async () => {
+    const [reactionCounts, comment] = await Promise.all([
+      reactionService.getAllReactionCountsByByTarget(targetType, targetId),
+      reactionService.getReactionsByType(targetType, 'COMMENT', targetId),
     ]);
-      setLikes(like.length);
-      console.log('like', like);
-      setDislikes(dislike.length);
-      console.log('dislike', dislike);
+      setLikes(reactionCounts.LIKE);
+      console.log('like', reactionCounts.LIKE);
+      setDislikes(reactionCounts.DISLIKE);
+      console.log('dislike', reactionCounts.DISLIKE);
+      setCommentCount(reactionCounts.COMMENT);
       setComments(comment || []);
       console.log('comment', comment);
+
     };
+  useEffect(() => {
     fetchReactions();
+    getCurrentUserReaction();
   }, []);
 
   return (
@@ -144,9 +182,10 @@ export const ReactionWrapper: React.FC<ReactionWrapperProps> = ({
             disabled={isLoading}
           /> */}
         </div>
-
+x
         {/* Comments section */}
         <CommentSection
+          className="flex items-center space-x-6 px-2"
           comments={comments}
           onAddComment={handleAddComment}
           isLoading={isLoading}

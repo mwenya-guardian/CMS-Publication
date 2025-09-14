@@ -81,7 +81,7 @@ export const AdminLayout: React.FC = () => {
           }`}
         >
           <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
-            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 flex-shrink-0">
               <h1 className="text-xl font-semibold text-gray-900">CMS</h1>
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -90,26 +90,63 @@ export const AdminLayout: React.FC = () => {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <nav className="flex-1 px-4 py-4 space-y-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
-                return (
+            
+            {/* Scrollable content area */}
+            <div className="flex-1 flex flex-col min-h-0">
+              <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto scrollbar-hide">
+                {navigation.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                        isActive
+                          ? 'bg-primary-100 text-primary-700'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Icon className="mr-3 h-5 w-5" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+              
+              {/* Fixed bottom section */}
+              <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
+                <div className="flex items-center mb-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-700">{user?.firstname} {user?.lastname}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
                   <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                      isActive
-                        ? 'bg-primary-100 text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    to="/user"
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
                   >
-                    <Icon className="mr-3 h-5 w-5" />
-                    {item.name}
+                    <User className="mr-3 h-4 w-4" />
+                    User Dashboard
                   </Link>
-                );
-              })}
-            </nav>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    icon={LogOut}
+                    className="w-full justify-start"
+                  >
+                    Sign out
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -120,7 +157,7 @@ export const AdminLayout: React.FC = () => {
           <div className="flex items-center h-16 px-4 border-b border-gray-200">
             <h1 className="text-xl font-semibold text-gray-900">CMS Administration</h1>
           </div>
-          <nav className="flex-1 px-4 py-4 space-y-1">
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto scrollbar-hide">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
@@ -141,7 +178,7 @@ export const AdminLayout: React.FC = () => {
             })}
           </nav>
           <div className="flex-shrink-0 p-4 border-t border-gray-200">
-            <div className="flex items-center">
+            <div className="flex items-center mb-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5 text-white" />

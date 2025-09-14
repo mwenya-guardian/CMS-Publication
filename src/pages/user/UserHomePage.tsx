@@ -14,8 +14,9 @@ import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
 import { publicationService } from '../../services/publicationService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { FileText, Calendar, Quote as QuoteIcon, BookOpen } from 'lucide-react';
 
-export const UserDashboard: React.FC = () => {
+export const UserHome: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -42,7 +43,7 @@ export const UserDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       if (activeTab === 'posts') {
-        const postsData = await postService.getPosts(postsPage, 5);
+        const postsData = await postService.getPeginated(postsPage, 5);
         setPosts(postsData.data || []);
         setPostsTotalPages(postsData.pagination?.totalPages || 1);
       } else if (activeTab === 'events') {
@@ -65,9 +66,6 @@ export const UserDashboard: React.FC = () => {
     }
   };
 
-  const handleReactionChange = () => {
-    loadData(); // Reload data to get updated reaction counts
-  };
 
   const handlePageChange = (page: number) => {
     if (activeTab === 'posts') {
@@ -102,10 +100,10 @@ export const UserDashboard: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'posts', name: 'Posts', count: posts.length },
-    { id: 'events', name: 'Events', count: events.length },
-    { id: 'quotes', name: 'Quotes', count: quotes.length },
-    { id: 'publications', name: 'Publications', count: publications.length },
+    { id: 'posts', name: 'Posts', count: posts.length, icon: FileText },
+    { id: 'events', name: 'Events', count: events.length, icon: Calendar },
+    { id: 'quotes', name: 'Quotes', count: quotes.length, icon: QuoteIcon },
+    { id: 'publications', name: 'Publications', count: publications.length, icon: BookOpen },
   ] as const;
 
 useEffect(() => {
@@ -125,23 +123,29 @@ useEffect(() => {
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab.name}
-                <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
-                  {tab.count}
-                </span>
-              </button>
-            ))}
+          <nav className="flex overflow-x-auto scrollbar-hide px-2 sm:px-6" aria-label="Tabs">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 py-4 px-2 sm:px-4 border-b-2 font-medium text-sm whitespace-nowrap flex-shrink-0 ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 flex-shrink-0 sm:mx-auto ${activeTab === tab.id ? 'text-blue-600' : ''}`} />
+                  <span className="hidden sm:inline">{tab.name}</span>
+                  <span className={`bg-gray-100 text-gray-900 py-0.5 px-2 rounded-full text-xs ${
+                    activeTab === tab.id ? 'bg-blue-100 text-blue-800' : ''
+                  }`}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
           </nav>
         </div>
 
@@ -164,7 +168,6 @@ useEffect(() => {
                   <PostCard
                     key={post.id}
                     post={post}
-                    onReactionChange={handleReactionChange}
                   />
                 ))
               )}
@@ -186,7 +189,6 @@ useEffect(() => {
                     initialLikes={0} // You might want to get this from the event data
                     initialDislikes={0}
                     initialComments={0}
-                    onReactionChange={handleReactionChange}
                   >
                     <div className="p-4">
                       <EventCard event={event} />
@@ -212,7 +214,6 @@ useEffect(() => {
                     initialLikes={0} // You might want to get this from the quote data
                     initialDislikes={0}
                     initialComments={0}
-                    onReactionChange={handleReactionChange}
                   >
                     <div className="p-4">
                       <QuoteCard quote={quote} />
@@ -238,7 +239,6 @@ useEffect(() => {
                     initialLikes={0} // You might want to get this from the publication data
                     initialDislikes={0}
                     initialComments={0}
-                    onReactionChange={handleReactionChange}
                   >
                     <div className="p-4">
                       <PublicationCard publication={publication} />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
@@ -12,13 +12,15 @@ import {
   Settings,
   Heart,
   Image,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 
 const navigation = [
-  { name: 'Dashboard', href: '/user', icon: Home },
+  { name: 'Home', href: '/user', icon: Home },
   { name: 'Media Posts', href: '/user/posts', icon: Image },
   { name: 'Bulletins', href: '/user/bulletins', icon: BookOpen },
   { name: 'Liked Posts', href: '/user/liked', icon: Heart },
@@ -44,17 +46,15 @@ export const UserLayout: React.FC = () => {
             <div className="flex items-center">
               <Link to="/user" className="flex-shrink-0">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      {user?.firstname?.charAt(0) || 'U'}
-                    </span>
-                  </div>
-                  <div className="hidden sm:block">
-                    <h1 className="text-lg font-semibold text-gray-900">
-                      {user?.firstname} {user?.lastname}
-                    </h1>
-                    <p className="text-sm text-gray-500">Welcome back!</p>
-                  </div>
+                    <button className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                      <img src={sdalogo} alt="client" className="h-8 object-contain" />
+                    </button>
+                    <div className="hidden sm:block">
+                      {/* <h1 className="text-lg font-semibold text-gray-900">
+                        {user?.firstname} {user?.lastname}
+                      </h1> */}
+                      <p className="text-sm text-gray-500">Welcome back!</p>
+                    </div>
                 </div>
               </Link>
             </div>
