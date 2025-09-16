@@ -23,6 +23,8 @@ import { MembersPage } from './pages/admin/MemberPage';
 import {  GivingPage } from './pages/admin/GivingPage';
 import { UsersPage } from './pages/admin/UserPage';
 import { ChurchDetailsPage } from './pages/admin/ChurchDetailsPage';
+import { NewsletterSchedulesPage } from './pages/admin/NewsletterSchedulesPage';
+import { PostsPage as AdminPostsPage } from './pages/admin/PostsPage';
 
 // User Pages
 import { UserLayout } from './components/layout/UserLayout';
@@ -76,9 +78,19 @@ function App() {
             <Route path="publications" element={<PublicationsPage />} />
             <Route path="events" element={<EventsPage />} />
             <Route path="quotes" element={<QuotesPage />} />
+            <Route path="posts" element={
+              <ProtectedAdminRoutes>
+                <AdminPostsPage />
+              </ProtectedAdminRoutes>
+            }/>
             <Route path="bulletins" element={
               <ProtectedAdminRoutes>
                 <BulletinsPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="schedules" element={
+              <ProtectedAdminRoutes>
+                <NewsletterSchedulesPage />
               </ProtectedAdminRoutes>
             }/>
             <Route path="members" element={

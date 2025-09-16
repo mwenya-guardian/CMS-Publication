@@ -13,7 +13,9 @@ import {
   Heart,
   Image,
   LogOut,
-  User
+  User,
+  AudioLines,
+  AudioWaveform
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -21,9 +23,9 @@ import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 
 const navigation = [
   { name: 'Home', href: '/user', icon: Home },
-  { name: 'Media Posts', href: '/user/posts', icon: Image },
+  { name: 'Media', href: '/user/posts', icon: AudioLines },
   { name: 'Bulletins', href: '/user/bulletins', icon: BookOpen },
-  { name: 'Liked Posts', href: '/user/liked', icon: Heart },
+  { name: 'Liked Posts', href: '/user/liked', icon: AudioWaveform },
   { name: 'Settings', href: '/user/settings', icon: Settings },
 ];
 

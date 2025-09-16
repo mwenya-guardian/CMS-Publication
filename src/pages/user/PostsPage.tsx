@@ -3,7 +3,7 @@ import { PostCard } from '../../components/posts/PostCard';
 import { Post } from '../../types/Post';
 import { postService } from '../../services/postService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { Filter } from 'lucide-react';
+import { Filter, RefreshCw } from 'lucide-react';
 
 export const PostsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -65,11 +65,11 @@ export const PostsPage: React.FC = () => {
   const filteredPosts = posts.filter(post => {
     switch (filter) {
       case 'images':
-        return post.mediaType === 'IMAGE';
+        return post.type === 'IMAGE';
       case 'videos':
-        return post.mediaType === 'VIDEO';
+        return post.type === 'VIDEO';
       case 'text':
-        return !post.mediaType;
+        return !post.type;
       default:
         return true;
     }
@@ -88,6 +88,16 @@ export const PostsPage: React.FC = () => {
     if (isNearBottom && hasMoreData && !isLoadingMore) {
       loadMoreData();
     }
+  };
+
+  const handleRefresh = () => {
+    // Reset page to 1 and clear existing posts
+    setPage(1);
+    setPosts([]);
+    setHasMoreData(true);
+    
+    // Reload data
+    loadPosts();
   };
 
   return (
@@ -173,8 +183,15 @@ export const PostsPage: React.FC = () => {
 
             {/* No more data indicator */}
             {!hasMoreData && (
-              <div className="text-center py-4 text-gray-500">
-                No more posts available
+              <div className="text-center py-4">
+                <p className="text-gray-500 mb-3">No more posts available</p>
+                <button
+                  onClick={handleRefresh}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </button>
               </div>
             )}
           </>

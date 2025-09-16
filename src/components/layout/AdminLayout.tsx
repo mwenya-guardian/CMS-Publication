@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 import { 
   Menu, 
@@ -13,7 +13,9 @@ import {
   User,
   HandHeart,
   UserCog,
-  Church
+  Church,
+  Clock,
+  AudioLines
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
@@ -32,8 +34,10 @@ export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  if(user == null || user.role == 'VIEWER' || user.role == 'USER') {
-      navigate('/');
+  if(user == null || user.role?.toUpperCase() == 'VIEWER') {
+    return <Navigate to="/" />
+  } else if(user.role?.toUpperCase() == 'USER'){
+    return <Navigate to="/user" />
   }
 
   if (user?.role?.toUpperCase() == 'ADMIN') {
@@ -42,7 +46,9 @@ export const AdminLayout: React.FC = () => {
         { name: 'Publications', href: '/admin/publications', icon: FileText },
         { name: 'Events', href: '/admin/events', icon: Calendar },
         { name: 'Quotes', href: '/admin/quotes', icon: Quote },   
+        { name: 'Posts', href: '/admin/posts', icon: AudioLines },
         { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
+        { name: 'Schedules', href: '/admin/schedules', icon: Clock },
         { name: 'Members', href: '/admin/members', icon: User },
         { name: 'Users', href: '/admin/users', icon: UserCog },
         { name: 'Giving', href: '/admin/giving', icon: HandHeart },

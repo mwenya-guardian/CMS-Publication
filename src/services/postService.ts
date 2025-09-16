@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Post, CreatePostRequest, CreateImagePostRequest, CreateVideoPostRequest, UpdatePostRequest} from '../types/Post';
+import { Post, CreatePostRequest, CreateImagePostRequest, CreateVideoPostRequest, UpdatePostRequest, PostType} from '../types/Post';
 import { ApiResponse, PaginatedResponse } from '../types/Common';
 
 
@@ -7,6 +7,11 @@ export const postService = {
   // Get all posts with pagination
   async getPeginated(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Post>> {
     const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts?page=${page}&limit=${limit}`);
+    return response.data.data;
+  },
+  //Get image posts peginated
+  async getMediadTyePeginated(page: number = 1, limit: number = 10, type: PostType): Promise<PaginatedResponse<Post>> {
+    const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts/${type}?page=${page}&limit=${limit}`);
     return response.data.data;
   },
 

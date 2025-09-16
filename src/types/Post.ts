@@ -1,20 +1,15 @@
-import { ReactionType } from "./Reaction";
-
 export interface Post {
   id: string;
   caption: string;
-  mediaUrl?: string;
-  mediaType?: 'IMAGE' | 'VIDEO';
+  resourceUrl?: string;
+  type?: PostType;
   isPublic: boolean;
   authorId: string;
   authorName?: string;
   createdAt: string;
   updatedAt: string;
-  likesCount: number;
-  dislikesCount: number;
-  commentsCount: number;
-  userReaction?: ReactionType;
 }
+export type PostType = 'IMAGE' | 'VIDEO' | 'TEXT';
 
 export interface CreatePostRequest {
   caption: string;

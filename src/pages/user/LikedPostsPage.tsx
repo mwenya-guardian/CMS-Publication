@@ -3,7 +3,7 @@ import { PostCard } from '../../components/posts/PostCard';
 import { Post } from '../../types/Post';
 import { postService } from '../../services/postService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { Heart } from 'lucide-react';
+import { Heart, RefreshCw } from 'lucide-react';
 
 export const LikedPostsPage: React.FC = () => {
   const [likedPosts, setLikedPosts] = useState<Post[]>([]);
@@ -83,6 +83,16 @@ export const LikedPostsPage: React.FC = () => {
     }
   };
 
+  const handleRefresh = () => {
+    // Reset page to 1 and clear existing liked posts
+    setPage(1);
+    setLikedPosts([]);
+    setHasMoreData(true);
+    
+    // Reload data
+    loadLikedPosts();
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -139,8 +149,15 @@ export const LikedPostsPage: React.FC = () => {
 
             {/* No more data indicator */}
             {!hasMoreData && (
-              <div className="text-center py-4 text-gray-500">
-                No more liked posts available
+              <div className="text-center py-4">
+                <p className="text-gray-500 mb-3">No more liked posts available</p>
+                <button
+                  onClick={handleRefresh}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </button>
               </div>
             )}
           </>

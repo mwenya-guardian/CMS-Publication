@@ -13,7 +13,7 @@ import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
 import { publicationService } from '../../services/publicationService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { FileText, Calendar, Quote as QuoteIcon, BookOpen } from 'lucide-react';
+import { FileText, Calendar, Quote as QuoteIcon, BookOpen, RefreshCw } from 'lucide-react';
 
 export const UserHome: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -149,6 +149,29 @@ export const UserHome: React.FC = () => {
     if (isNearBottom && hasMoreData[activeTab] && !isLoadingMore) {
       loadMoreData();
     }
+  };
+
+  const handleRefresh = () => {
+    // Reset the current tab's page to 1 and reload data
+    if (activeTab === 'posts') {
+      setPostsPage(1);
+      setPosts([]);
+    } else if (activeTab === 'events') {
+      setEventsPage(1);
+      setEvents([]);
+    } else if (activeTab === 'quotes') {
+      setQuotesPage(1);
+      setQuotes([]);
+    } else if (activeTab === 'publications') {
+      setPublicationsPage(1);
+      setPublications([]);
+    }
+    
+    // Reset hasMoreData for the current tab
+    setHasMoreData(prev => ({ ...prev, [activeTab]: true }));
+    
+    // Reload data
+    loadData();
   };
 
 
@@ -315,8 +338,15 @@ useEffect(() => {
 
               {/* No more data indicator */}
               {!hasMoreData[activeTab] && (
-                <div className="text-center py-4 text-gray-500">
-                  No more data available
+                <div className="text-center py-4">
+                  <p className="text-gray-500 mb-3">No more data available</p>
+                  <button
+                    onClick={handleRefresh}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh
+                  </button>
                 </div>
               )}
             </>

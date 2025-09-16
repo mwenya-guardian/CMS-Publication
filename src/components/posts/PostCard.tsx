@@ -1,10 +1,6 @@
-import React, { useState } from 'react';
-import { ReactionButton } from '../common/ReactionButton';
-import { CommentSection } from '../common/CommentSection';
-import { ReactionType, ReactionResponse } from '../../types/Reaction';
+import React from 'react';
+import { ReactionWrapper } from '../common/ReactionWrapper';
 import { Post } from '../../types/Post';
-import { postService } from '../../services/postService';
-import { reactionService } from '../../services/reactionService';
 
 interface PostCardProps {
   post: Post;
@@ -12,56 +8,10 @@ interface PostCardProps {
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [comments, setComments] = useState<ReactionResponse[]>([]);
-  const [showComments, setShowComments] = useState(false);
-
-  const handleReaction = async (type: ReactionType) => {
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    try {
-      if (post.userReaction === type) {
-        // Remove reaction
-        await reactionService.deleteReaction('POST', post.id);
-      } else {
-        // Add or change reaction
-        await reactionService.createReaction('POST', {
-          type,
-          targetId: post.id,
-        });
-      }
-      onReactionChange?.();
-    } catch (error) {
-      console.error('Failed to update reaction:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAddComment = async (comment: string) => {
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    try {
-      await reactionService.createReaction('POST', {
-        type: 'COMMENT',
-        targetId: post.id,
-        comment,
-      });
-      onReactionChange?.();
-    } catch (error) {
-      console.error('Failed to add comment:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 48) return 'Yesterday';
@@ -69,7 +19,16 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <ReactionWrapper
+      targetId={post.id}
+      targetType="POST"
+      // initialLikes={post.likesCount || 0}
+      // initialDislikes={post.dislikesCount || 0}
+      // initialComments={post.commentsCount || 0}
+      // userReaction={post.userReaction || undefined}
+      onReactionChange={onReactionChange}
+      className=""
+    >
       {/* Post header */}
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-center space-x-3">
@@ -90,19 +49,17 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
       {/* Post content */}
       <div className="p-4">
         <p className="text-gray-900 mb-4">{post.caption}</p>
-        
-        {/* Media content */}
-        {post.mediaUrl && (
+        {post.resourceUrl && (
           <div className="mb-4">
-            {post.mediaType === 'IMAGE' ? (
+            {post.type === 'IMAGE' ? (
               <img
-                src={post.mediaUrl}
+                src={post.resourceUrl}
                 alt="Post content"
                 className="w-full h-auto rounded-lg object-cover max-h-96"
               />
-            ) : post.mediaType === 'VIDEO' ? (
+            ) : post.type === 'VIDEO' ? (
               <video
-                src={post.mediaUrl}
+                src={post.resourceUrl}
                 controls
                 className="w-full h-auto rounded-lg max-h-96"
               >
@@ -112,41 +69,6 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
           </div>
         )}
       </div>
-
-      {/* Reactions and comments */}
-      <div className="px-4 pb-4">
-        {/* Reaction buttons */}
-        <div className="flex items-center space-x-4 mb-4">
-          <ReactionButton
-            type="LIKE"
-            count={post.likesCount}
-            isActive={post.userReaction === 'LIKE'}
-            onClick={() => handleReaction('LIKE')}
-            disabled={isLoading}
-          />
-          {/* <ReactionButton
-            type="LOVE"
-            count={0} // You might want to track this separately
-            isActive={post.userReaction === 'LOVE'}
-            onClick={() => handleReaction('LOVE')}
-            disabled={isLoading}
-          />
-          <ReactionButton
-            type="WOW"
-            count={0} // You might want to track this separately
-            isActive={post.userReaction === 'WOW'}
-            onClick={() => handleReaction('WOW')}
-            disabled={isLoading}
-          /> */}
-        </div>
-
-        {/* Comments section */}
-        <CommentSection
-          comments={comments}
-          onAddComment={handleAddComment}
-          isLoading={isLoading}
-        />
-      </div>
-    </div>
+    </ReactionWrapper>
   );
 };
