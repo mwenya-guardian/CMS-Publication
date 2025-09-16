@@ -9,9 +9,14 @@ export const postService = {
     const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts?page=${page}&limit=${limit}`);
     return response.data.data;
   },
+  // Get all posts with pagination
+  async getAllLikedPeginated(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Post>> {
+    const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts/reaction/like/me?page=${page}&limit=${limit}`);
+    return response.data.data;
+  },
   //Get image posts peginated
   async getMediadTyePeginated(page: number = 1, limit: number = 10, type: PostType): Promise<PaginatedResponse<Post>> {
-    const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts/${type}?page=${page}&limit=${limit}`);
+    const response = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts/type/${type}?page=${page}&limit=${limit}`);
     return response.data.data;
   },
 

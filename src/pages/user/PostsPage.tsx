@@ -9,7 +9,7 @@ export const PostsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState<'all' | 'images' | 'videos' | 'text'>('all');
+  const [filter, setFilter] = useState<'images' | 'videos' | 'media'>('media');
   
   // Buffer management states
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -68,8 +68,8 @@ export const PostsPage: React.FC = () => {
         return post.type === 'IMAGE';
       case 'videos':
         return post.type === 'VIDEO';
-      case 'text':
-        return !post.type;
+      case 'media':
+         return post.type !== 'TEXT';
       default:
         return true;
     }
@@ -103,7 +103,7 @@ export const PostsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Media Posts</h1>
@@ -112,7 +112,7 @@ export const PostsPage: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -120,10 +120,10 @@ export const PostsPage: React.FC = () => {
           <Filter className="h-5 w-5 text-gray-500" />
           <div className="flex space-x-2">
             {[
-              { id: 'all', label: 'All Posts' },
+              { id: 'media', label: 'All Posts' },
               { id: 'images', label: 'Images' },
               { id: 'videos', label: 'Videos' },
-              { id: 'text', label: 'Text Only' },
+              // { id: 'text', label: 'Text Only' },
             ].map((filterOption) => (
               <button
                 key={filterOption.id}
@@ -146,7 +146,7 @@ export const PostsPage: React.FC = () => {
 
       {/* Posts */}
       <div 
-        className="space-y-4 max-h-96 overflow-y-auto"
+        className="space-y-4 max-h-[600px] overflow-y-auto"
         onScroll={handleScroll}
       >
         {isLoading && posts.length === 0 ? (
@@ -157,7 +157,7 @@ export const PostsPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
             <p className="text-gray-500 text-lg">No posts found.</p>
             <p className="text-gray-400 mt-2">
-              {filter === 'all' 
+              {filter === 'media' 
                 ? 'No posts have been shared yet.' 
                 : `No ${filter} posts found.`
               }

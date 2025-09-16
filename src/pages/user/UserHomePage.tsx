@@ -13,7 +13,7 @@ import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
 import { publicationService } from '../../services/publicationService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { FileText, Calendar, Quote as QuoteIcon, BookOpen, RefreshCw } from 'lucide-react';
+import { Calendar, Quote as QuoteIcon, RefreshCw, Rss, AudioLines } from 'lucide-react';
 
 export const UserHome: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -58,7 +58,7 @@ export const UserHome: React.FC = () => {
     
     try {
       if (activeTab === 'posts') {
-        const postsData = await postService.getPeginated(postsPage, 5);
+        const postsData = await postService.getMediadTyePeginated(postsPage, 5, 'TEXT');
         const newPosts = postsData.data || [];
         
         if (isLoadMore) {
@@ -176,10 +176,10 @@ export const UserHome: React.FC = () => {
 
 
   const tabs = [
-    { id: 'posts', name: 'Posts', count: posts.length, icon: FileText },
+    { id: 'posts', name: 'Posts', count: posts.length, icon: AudioLines },
     { id: 'events', name: 'Events', count: events.length, icon: Calendar },
     { id: 'quotes', name: 'Quotes', count: quotes.length, icon: QuoteIcon },
-    { id: 'publications', name: 'Publications', count: publications.length, icon: BookOpen },
+    { id: 'publications', name: 'Publications', count: publications.length, icon: Rss },
   ] as const;
 
 useEffect(() => {
@@ -189,12 +189,12 @@ useEffect(() => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Your Dashboard</h1>
         <p className="text-gray-600">
           Stay connected with the latest posts, events, quotes, and publications from your community.
         </p>
-      </div>
+      </div> */}
 
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -227,7 +227,7 @@ useEffect(() => {
 
         {/* Tab content */}
         <div 
-          className="p-6 max-h-96 overflow-y-auto"
+          className="p-6 max-h-[600px] overflow-y-auto"
           onScroll={handleScroll}
         >
           {isLoading ? (

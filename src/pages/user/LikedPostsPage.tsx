@@ -25,15 +25,11 @@ export const LikedPostsPage: React.FC = () => {
   const loadLikedPosts = async () => {
     setIsLoading(true);
     try {
-      // For now, we'll get all posts and filter those with user reactions
-      // In a real implementation, you'd have a specific endpoint for liked posts
-      const response = await postService.getPeginated(page, 5);
-      const allPosts = response.data || [];
+      const response = await postService.getAllLikedPeginated(page, 5);
+      const allLikedPosts = response.data || [];
       
-      // Filter posts that the user has reacted to
-      const liked = allPosts.filter(post => post.userReaction);
-      setLikedPosts(liked);
-      setHasMoreData(liked.length === 5);
+      setLikedPosts(allLikedPosts);
+      setHasMoreData(allLikedPosts.length === 5);
     } catch (error) {
       console.error('Failed to load liked posts:', error);
     } finally {
@@ -44,19 +40,16 @@ export const LikedPostsPage: React.FC = () => {
   const loadMoreLikedPosts = async () => {
     setIsLoadingMore(true);
     try {
-      const response = await postService.getPeginated(page, 5);
-      const allPosts = response.data || [];
-      
-      // Filter posts that the user has reacted to
-      const liked = allPosts.filter(post => post.userReaction);
+      const response = await postService.getAllLikedPeginated(page, 5);
+      const allLikedPosts = response.data || [];
       
       setLikedPosts(prevLikedPosts => {
-        const combined = [...prevLikedPosts, ...liked];
+        const combined = [...prevLikedPosts, ...allLikedPosts];
         // Keep only the last 15 items if we exceed the buffer
         return combined.length > 15 ? combined.slice(-15) : combined;
       });
       
-      setHasMoreData(liked.length === 5);
+      setHasMoreData(allLikedPosts.length === 5);
     } catch (error) {
       console.error('Failed to load more liked posts:', error);
     } finally {
@@ -106,9 +99,12 @@ export const LikedPostsPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-3">
-          <Heart className="h-8 w-8 text-red-500" />
+          
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Liked Posts</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2 flex flex-row items-center">
+               Liked Posts
+              <Heart className="h-6 w-6 text-red-400 ml-2" />
+            </h1>
             <p className="text-gray-600">
               Posts you've reacted to and want to revisit.
             </p>
@@ -118,7 +114,7 @@ export const LikedPostsPage: React.FC = () => {
 
       {/* Liked Posts */}
       <div 
-        className="space-y-4 max-h-96 overflow-y-auto"
+        className="space-y-4 max-h-[600px] overflow-y-auto"
         onScroll={handleScroll}
       >
         {likedPosts.length === 0 ? (
