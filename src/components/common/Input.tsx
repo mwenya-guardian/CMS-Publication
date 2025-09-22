@@ -13,6 +13,9 @@ interface InputProps {
   icon?: LucideIcon;
   className?: string;
   rows?: number;
+  maxlength?: number;
+  min?: number;
+  max?: number;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -27,6 +30,9 @@ export const Input: React.FC<InputProps> = ({
   icon: Icon,
   className = '',
   rows = 4,
+  maxlength,
+  min,
+  max,
 }) => {
   const baseClasses = 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200  focus:outline-none focus:ring-0 sm:text-sm p-3';
   const errorClasses = error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : '';
@@ -38,6 +44,7 @@ export const Input: React.FC<InputProps> = ({
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
       required={required}
+      maxLength={maxlength}
       rows={rows}
       className={`${baseClasses} ${errorClasses} ${className}`}
     />
@@ -50,6 +57,10 @@ export const Input: React.FC<InputProps> = ({
       disabled={disabled}
       required={required}
       className={`${baseClasses} ${errorClasses} ${className}`}
+      max={max}
+      maxLength={max}
+      min={min}
+      minLength={min}
     />
   );
 

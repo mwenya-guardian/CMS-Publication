@@ -36,6 +36,7 @@ import { SettingsPage } from './pages/user/SettingsPage';
 
 // Auth Pages
 import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
 
           {/* Auth Routes */}
           <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/register" element={<Register />} />
 
           {/* User Routes (Protected) */}
           <Route path="/user" element={

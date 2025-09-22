@@ -55,22 +55,22 @@ export const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary-100 to-accent-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 tra">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 bg-primary-600 rounded-full flex items-center justify-center">
             <LogIn className="h-6 w-6 text-white" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Sign in to your account
+            Sign In To Your Account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Access the admin dashboard to manage your content
+            Access member news, We'd love to have feebback from you 
           </p>
         </div>
       </div>
 
-      <div className="mt-8 sm:max-w-md sm:mx-auto sm:w-full"> 
+      <div className="mt-8 sm:max-w-md sm:mx-auto sm:w-full bg-green/60 backdrop-blur-md border-r-20"> 
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
           <form className="space-y-6 border-none" onSubmit={handleSubmit}>
             <Input
@@ -136,27 +136,40 @@ export const Login: React.FC = () => {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Demo Credentials</span>
+                <span className="px-2 bg-white text-gray-500">Example Credentials</span>
               </div>
             </div>
 
             <div className="mt-4 bg-gray-50 rounded-md p-4">
-              <p className="text-xs text-gray-600 mb-2">For demo purposes, use:</p>
+              {/* <p className="text-xs text-gray-600 mb-2">For demo purposes, use:</p> */}
               <div className="space-y-1 text-xs">
                 <p><strong>Email:</strong> admin@example.com</p>
-                <p><strong>Password:</strong> password123</p>
+                <p><strong>Password:</strong> password</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 text-center">
-            <Link
-              to="/"
-              className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 transition-colors duration-200"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to public site
-            </Link>
+          <div className="mt-6 text-center space-y-3">
+            <div>
+              <p className="text-sm text-gray-600">
+                Don't have an account?{' '}
+                <Link
+                  to="/auth/register"
+                  className="font-medium text-primary-600 hover:text-primary-500 transition-colors duration-200"
+                >
+                  Sign Up
+                </Link>
+              </p>
+            </div>
+            <div>
+              <Link
+                to="/"
+                className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 transition-colors duration-200"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back to public site
+              </Link>
+            </div>
           </div>
         </div>
       </div>

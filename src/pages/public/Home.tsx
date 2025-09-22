@@ -248,23 +248,25 @@ export const Home: React.FC = () => {
 
                 <p className="text-lg text-gray-600 mb-6 max-w-prose">{slides[currentSlide].description}</p>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 font-bold">
                   <a href="#newsletter-signup">
                     <Button variant="ghost" size="lg">
                       {slides[currentSlide].ctaLabel}
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <ArrowRight className="font-bold h-4 w-4 ml-1" />
                     </Button>
                   </a>
                   <Link to="/about">
                     <Button variant="ghost" size="lg">
                       Contact Us
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <ArrowRight className="font-bold h-4 w-4 ml-1" />
                     </Button>
                   </Link>
-                  {/* <Link to="/contact" className="text-sm text-gray-700 hover:underline flex items-center">
-                    Contact Us
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link> */}
+                  <Link to="/auth/register" className="text-sm text-gray-400 flex items-center">
+                    <Button variant="ghost" size="lg">
+                      Create Account
+                      <ArrowRight className="font-bold h-4 w-4 ml-1" />
+                    </Button>
+                  </Link>
                 </div>
 
                 {/* indicators (dots) - uses only existing UI strings in aria-labels */}
@@ -314,7 +316,7 @@ export const Home: React.FC = () => {
 
         {children}
 
-        <div className="text-center mt-8">
+        <div className="text-center mt-6">
           <Link to={viewAllLink}>
             <Button variant="outline" size="lg">
               View All
