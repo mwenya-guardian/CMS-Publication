@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import sdalogo from "../../assets/icons/sdalogobluewhite.jpg";
 import { 
   Menu, 
@@ -8,37 +8,59 @@ import {
   FileText, 
   Calendar, 
   Quote, 
-  Settings, 
   BookOpen,
   LogOut,
   User,
-  Bell,
   HandHeart,
   UserCog,
-  Church
+  Church,
+  Clock,
+  AudioLines
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
 
-const navigation = [
+let navigation = [
   { name: 'Dashboard', href: '/admin', icon: Home },
   { name: 'Publications', href: '/admin/publications', icon: FileText },
   { name: 'Events', href: '/admin/events', icon: Calendar },
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
-  { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
-  { name: 'Members', href: '/admin/members', icon: User },
-  { name: 'Users', href: '/admin/users', icon: UserCog },
-  { name: 'Giving', href: '/admin/giving', icon: HandHeart },
-  // { name: 'Settings', href: '/admin/settings', icon: Settings },
-  { name: 'Church', href: '/admin/church-details', icon: Church },
-
 ];
+
 
 export const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  if(user == null || user.role?.toUpperCase() == 'VIEWER') {
+    return <Navigate to="/" />
+  } else if(user.role?.toUpperCase() == 'USER'){
+    return <Navigate to="/user" />
+  }
+
+  if (user?.role?.toUpperCase() == 'ADMIN') {
+      navigation = [
+        { name: 'Dashboard', href: '/admin', icon: Home },
+        { name: 'Publications', href: '/admin/publications', icon: FileText },
+        { name: 'Events', href: '/admin/events', icon: Calendar },
+        { name: 'Quotes', href: '/admin/quotes', icon: Quote },   
+        { name: 'Posts', href: '/admin/posts', icon: AudioLines },
+        { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
+        { name: 'Schedules', href: '/admin/schedules', icon: Clock },
+        { name: 'Members', href: '/admin/members', icon: User },
+        { name: 'Users', href: '/admin/users', icon: UserCog },
+        { name: 'Giving', href: '/admin/giving', icon: HandHeart },
+        // { name: 'Settings', href: '/admin/settings', icon: Settings },
+        { name: 'Church', href: '/admin/church-details', icon: Church },];
+    }
+
+
+
+  useEffect(() => {
+    
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -65,8 +87,8 @@ export const AdminLayout: React.FC = () => {
           }`}
         >
           <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
-            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-              <h1 className="text-xl font-semibold text-gray-900">CMS Admin</h1>
+            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 flex-shrink-0">
+              <h1 className="text-xl font-semibold text-gray-900">CMS</h1>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -74,26 +96,63 @@ export const AdminLayout: React.FC = () => {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <nav className="flex-1 px-4 py-4 space-y-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
-                return (
+            
+            {/* Scrollable content area */}
+            <div className="flex-1 flex flex-col min-h-0">
+              <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto scrollbar-hide">
+                {navigation.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                        isActive
+                          ? 'bg-primary-100 text-primary-700'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Icon className="mr-3 h-5 w-5" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+              
+              {/* Fixed bottom section */}
+              <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
+                <div className="flex items-center mb-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-700">{user?.firstname} {user?.lastname}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
                   <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                      isActive
-                        ? 'bg-primary-100 text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    to="/user"
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
                   >
-                    <Icon className="mr-3 h-5 w-5" />
-                    {item.name}
+                    <User className="mr-3 h-4 w-4" />
+                    User Dashboard
                   </Link>
-                );
-              })}
-            </nav>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    icon={LogOut}
+                    className="w-full justify-start"
+                  >
+                    Sign out
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -102,9 +161,9 @@ export const AdminLayout: React.FC = () => {
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
           <div className="flex items-center h-16 px-4 border-b border-gray-200">
-            <h1 className="text-xl font-semibold text-gray-900">CMS Admin</h1>
+            <h1 className="text-xl font-semibold text-gray-900">CMS Administration</h1>
           </div>
-          <nav className="flex-1 px-4 py-4 space-y-1">
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto scrollbar-hide">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
@@ -125,7 +184,7 @@ export const AdminLayout: React.FC = () => {
             })}
           </nav>
           <div className="flex-shrink-0 p-4 border-t border-gray-200">
-            <div className="flex items-center">
+            <div className="flex items-center mb-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5 text-white" />
@@ -136,15 +195,24 @@ export const AdminLayout: React.FC = () => {
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              icon={LogOut}
-              className="w-full mt-2 justify-start"
-            >
-              Sign out
-            </Button>
+            <div className="space-y-2">
+              <Link
+                to="/user"
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
+              >
+                <User className="mr-3 h-4 w-4" />
+                User Dashboard
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                icon={LogOut}
+                className="w-full justify-start"
+              >
+                Sign out
+              </Button>
+            </div>
           </div>
         </div>
       </div>

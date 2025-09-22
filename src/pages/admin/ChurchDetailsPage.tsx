@@ -100,9 +100,6 @@ export const ChurchDetailsPage: React.FC = () => {
     }
   };
 
-  const handleClearFilters = () => setFilters({});
-
-  const hasActiveFilters = Object.keys(filters).some(k => filters[k as keyof FilterOptions] !== undefined);
 
   if (isLoading) {
     return (
@@ -134,31 +131,12 @@ export const ChurchDetailsPage: React.FC = () => {
             variant="primary"
             icon={Plus}
             onClick={handleCreate}
+            disabled={details?.length >= 0}
           >
             New Details
           </Button>
         </div>
       </div>
-{/* 
-      {isFiltersOpen && (
-        <div className="mb-4 bg-white rounded-md p-4 border border-gray-100">
-          <div className="flex flex-col sm:flex-row gap-3 items-center">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search name, address or city..."
-                value={String(filters.search ?? '')}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={handleClearFilters}>Clear</Button>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       <div>
         <ChurchDetailsList

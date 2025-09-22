@@ -7,56 +7,35 @@ import { Button } from '../common/Button';
 interface BulletinCardProps {
   bulletin: ChurchBulletin;
   layoutType?: 'grid' | 'list';
-  isAdmin?: boolean;
-  onEdit?: (bulletin: ChurchBulletin) => void;
-  onDelete?: (id: string) => void;
+  // isAdmin?: boolean;
+  // onEdit?: (bulletin: ChurchBulletin) => void;
+  // onDelete?: (id: string) => void;
   onView?: (bulletin: ChurchBulletin) => void;
-  onPublish?: (id: string) => void;
-  onExportPdf?: (id: string) => void;
-  onDownloadPdf?: (bulletin: ChurchBulletin) => void;
+  // onPublish?: (id: string) => void;
+  onExportPdf?: (id: string, format: 'pdf') => Promise<void>;
+  onGenerate?: ()=> void;
+  // onDownloadPdf?: (bulletin: ChurchBulletin) => void;
   className?: string;
 }
 
 export const BulletinCard: React.FC<BulletinCardProps> = ({
   bulletin,
   layoutType = 'grid',
-  isAdmin = false,
-  onEdit,
-  onDelete,
   onView,
-  onPublish,
   onExportPdf,
-  onDownloadPdf,
+  onGenerate,
   className = '',
 }) => {
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEdit?.(bulletin);
-  };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDelete?.(bulletin.id);
-  };
-
-  const handlePublish = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onPublish?.(bulletin.id);
-  };
-
-  const handleExportPdf = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onExportPdf?.(bulletin.id);
-  };
-
-  const handleDownloadPdf = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDownloadPdf?.(bulletin);
-  };
-
+  const handleExport = (format: string) => {
+    onExportPdf?.(bulletin?.id, format);
+  }
   const handleView = () => {
     onView?.(bulletin);
   };
+  const handleGenerate = () => {
+    onGenerate?.();
+  }
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -69,7 +48,7 @@ export const BulletinCard: React.FC<BulletinCardProps> = ({
 
   const baseClasses = 'bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group';
 
-  if (layoutType === 'list') {
+  if (layoutType === 'list' && false) {
     return (
       <div className={`${baseClasses} ${className}`} onClick={handleView}>
         <div className="flex p-6">
@@ -83,13 +62,13 @@ export const BulletinCard: React.FC<BulletinCardProps> = ({
               <div className="flex-1">
                 <div className="flex items-center mb-2">
                   <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-200">
-                    {bulletin.churchInfo.name} - {dateUtils.formatDate(bulletin.bulletinDate)}
+                    {bulletin?.cover?.documentName} - {dateUtils.formatDate(bulletin.bulletinDate)}
                   </h3>
                   <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(bulletin.status)}`}>
                     {bulletin.status}
                   </span>
                 </div>
-                <p className="text-gray-600 mb-3 line-clamp-2">{bulletin.coverContent.welcomeMessage}</p>
+                <p className="text-gray-600 mb-3 line-clamp-2">{bulletin?.cover?.welcomeMessage}</p>
                 <div className="flex items-center text-sm text-gray-500 space-x-4">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
@@ -97,29 +76,14 @@ export const BulletinCard: React.FC<BulletinCardProps> = ({
                   </div>
                   <div className="flex items-center">
                     <MapPin className="w-4 h-4 mr-1" />
-                    {bulletin.churchInfo.address}
+                    {bulletin?.cover?.footerMessage}
                   </div>
                   <div className="flex items-center">
                     <FileText className="w-4 h-4 mr-1" />
-                    {bulletin.services.length} services
+                    {bulletin.schedules.length} schedules
                   </div>
                 </div>
               </div>
-              {isAdmin && (
-                <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
-                  {bulletin.status === 'draft' && (
-                    <Button variant="ghost" size="sm" onClick={handlePublish} icon={Send} />
-                  )}
-                  <Button variant="ghost" size="sm" onClick={handleExportPdf} icon={Download} />
-                  <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
-                </div>
-              )}
-              {!isAdmin && (
-                <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={handleDownloadPdf} icon={Download} />
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -138,28 +102,18 @@ export const BulletinCard: React.FC<BulletinCardProps> = ({
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-200">
-                  Church Bulletin
+                  Bulletin
                 </h3>
-                <p className="text-sm text-gray-600">{bulletin.churchInfo.name}</p>
+                <p className="text-sm text-gray-600">{bulletin.title}</p>
               </div>
             </div>
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(bulletin.status)}`}>
               {bulletin.status}
             </span>
           </div>
-          {isAdmin && (
-            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
-              {bulletin.status === 'draft' && (
-                <Button variant="ghost" size="sm" onClick={handlePublish} icon={Send} />
-              )}
-              <Button variant="ghost" size="sm" onClick={handleExportPdf} icon={Download} />
-              <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
-            </div>
-          )}
         </div>
         
-        <p className="text-gray-600 mb-4 line-clamp-3">{bulletin.coverContent.welcomeMessage}</p>
+        <p className="text-gray-600 mb-4 line-clamp-3">{bulletin.cover?.welcomeMessage}</p>
         
         <div className="space-y-2 text-sm text-gray-500">
           <div className="flex items-center">
@@ -168,24 +122,77 @@ export const BulletinCard: React.FC<BulletinCardProps> = ({
           </div>
           <div className="flex items-center">
             <MapPin className="w-4 h-4 mr-2" />
-            {bulletin.churchInfo.address}
+            {bulletin.cover?.footerMessage}
           </div>
+                {/* Schedules preview */}
+                {bulletin.schedules && bulletin.schedules.length > 0 && (
+                  <div className="mb-4">
+                    <h5 className="font-medium text-gray-800 mb-2 flex items-center">
+                      <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+                      Services ({bulletin.schedules.length})
+                    </h5>
+                    <div className="space-y-1">
+                      {bulletin.schedules.slice(0, 2).map((schedule, index) => (
+                        <div key={index} className="text-sm text-gray-600">
+                          <span className="font-medium">{schedule.title}</span>
+                          <span className="ml-2">
+                            {schedule.startTime} - {schedule.endTime}
+                          </span>
+                        </div>
+                      ))}
+                      {bulletin.schedules.length > 2 && (
+                        <p className="text-xs text-gray-500">+{bulletin.schedules.length - 2} more services</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+          {/* Announcements preview */}
+          {bulletin.announcements && bulletin.announcements.length > 0 && (
+                  <div className="mb-4">
+                    <h5 className="font-medium text-gray-800 mb-2">Announcements ({bulletin.announcements.length})</h5>
+                    <div className="space-y-1">
+                      {bulletin.announcements.slice(0, 2).map((announcement, index) => (
+                        <div key={index} className="text-sm text-gray-600 truncate">
+                          {announcement.title}
+                        </div>
+                      ))}
+                      {bulletin.announcements.length > 2 && (
+                        <p className="text-xs text-gray-500">+{bulletin.announcements.length - 2} more announcements</p>
+                      )}
+                    </div>
+                  </div>
+          )}
           <div className="flex items-center">
             <FileText className="w-4 h-4 mr-2" />
-            {bulletin.services.length} services, {bulletin.announcements.length} announcements
+            {bulletin.schedules.length} services, {bulletin.announcements.length} announcements
           </div>
         </div>
         
-        {!isAdmin && (
-          <div className="mt-4 flex justify-between items-center">
-            <Button variant="ghost" size="sm" icon={Eye}>
-              View details
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleDownloadPdf} icon={Download}>
-              Download
-            </Button>
-          </div>
-        )}
+        <div className="flex space-x-2 mt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleView();
+                    }}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    View
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExport('pdf');
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    PDF
+                  </Button>
+                </div>
       </div>
     </div>
   );

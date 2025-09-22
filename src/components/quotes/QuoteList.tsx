@@ -37,7 +37,9 @@ export const QuoteList: React.FC<QuoteListProps> = ({
 
   useEffect(() => {
     const grouped = quotes.reduce((acc, quote) => {
+      console.warn(quote?.createdAt);
       const year = new Date(quote.createdAt).getFullYear().toString();
+      // console.warn(year)
       if (!acc[year]) {
         acc[year] = [];
       }

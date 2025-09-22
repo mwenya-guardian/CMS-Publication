@@ -1,9 +1,9 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { ProtectedAdminRoutes } from './components/auth/ProtectedAdminRoutes';
 
 // Public Pages
 import { Home } from './pages/public/Home';
@@ -23,8 +23,20 @@ import { MembersPage } from './pages/admin/MemberPage';
 import {  GivingPage } from './pages/admin/GivingPage';
 import { UsersPage } from './pages/admin/UserPage';
 import { ChurchDetailsPage } from './pages/admin/ChurchDetailsPage';
+import { NewsletterSchedulesPage } from './pages/admin/NewsletterSchedulesPage';
+import { PostsPage as AdminPostsPage } from './pages/admin/PostsPage';
+
+// User Pages
+import { UserLayout } from './components/layout/UserLayout';
+import { UserHome } from './pages/user/UserHomePage';
+import { PostsPage } from './pages/user/PostsPage';
+import { BulletinsPage as UserBulletinsPage } from './pages/user/BulletinsPage';
+import { LikedPostsPage } from './pages/user/LikedPostsPage';
+import { SettingsPage } from './pages/user/SettingsPage';
+
 // Auth Pages
 import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
 
 function App() {
   return (
@@ -43,6 +55,20 @@ function App() {
 
           {/* Auth Routes */}
           <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/register" element={<Register />} />
+
+          {/* User Routes (Protected) */}
+          <Route path="/user" element={
+            <ProtectedRoute>
+              <UserLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<UserHome />} />
+            <Route path="posts" element={<PostsPage />} />
+            <Route path="bulletins" element={<UserBulletinsPage />} />
+            <Route path="liked" element={<LikedPostsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
 
           {/* Admin Routes (Protected) */}
           <Route path="/admin" element={
@@ -54,11 +80,41 @@ function App() {
             <Route path="publications" element={<PublicationsPage />} />
             <Route path="events" element={<EventsPage />} />
             <Route path="quotes" element={<QuotesPage />} />
-            <Route path="bulletins" element={<BulletinsPage />} />
-            <Route path="members" element={<MembersPage />} />
-            <Route path="giving" element={<GivingPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="church-details" element={<ChurchDetailsPage />} />
+            <Route path="posts" element={
+              <ProtectedAdminRoutes>
+                <AdminPostsPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="bulletins" element={
+              <ProtectedAdminRoutes>
+                <BulletinsPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="schedules" element={
+              <ProtectedAdminRoutes>
+                <NewsletterSchedulesPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="members" element={
+              <ProtectedAdminRoutes>
+                <MembersPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="giving" element={
+              <ProtectedAdminRoutes>
+                <GivingPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="users" element={
+              <ProtectedAdminRoutes>
+                <UsersPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="church-details" element={
+              <ProtectedAdminRoutes>
+                <ChurchDetailsPage />
+              </ProtectedAdminRoutes>
+            }/>
           </Route>
 
           {/* Catch all route - redirect to home */}

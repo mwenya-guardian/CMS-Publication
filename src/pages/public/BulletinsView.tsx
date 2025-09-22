@@ -8,6 +8,7 @@ import { bulletinService } from '../../services/bulletinService';
 import { LayoutType, FilterOptions } from '../../types/Common';
 import { dateUtils } from '../../utils/dateUtils';
 import { Calendar, Clock, Users, Book, FileText, Eye, Download, Plus, BookOpen } from 'lucide-react';
+import { exportUtils } from '../../utils/exportUtils';
 
 export const BulletinsView: React.FC = () => {
   const [bulletins, setBulletins] = useState<ChurchBulletin[]>([]);
@@ -16,7 +17,7 @@ export const BulletinsView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({});
-  const [layout, setLayout] = useState<LayoutType>('grid');
+  const [layout, setLayout] = useState<LayoutType>('list');
 
   useEffect(() => {
     fetchBulletins();
@@ -54,15 +55,14 @@ export const BulletinsView: React.FC = () => {
       } else {
         blob = await bulletinService.exportToWord(bulletinId);
       }
+      
 
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `bulletin-${bulletinId}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      if(format === 'pdf') {
+        exportUtils.downloadBlob(blob, `bulletin-${bulletinId}.${format}`);
+      } else {
+        exportUtils.downloadBlob(blob, `bulletin-${bulletinId}.docx`);
+      }
+
     } catch (err) {
       console.error(`Error exporting ${format}:`, err);
     }
@@ -81,22 +81,6 @@ export const BulletinsView: React.FC = () => {
     }
   };
 
-  // Helper - safe date formatting (fallback to toLocaleString)
-  const formatDateTime = (iso?: string | null) => {
-    if (!iso) return '-';
-    try {
-      // prefer dateUtils if it has a format helper, otherwise fallback
-      // (dateUtils usage is optional — guard in case it's not present)
-      // Example: dateUtils.format(iso) — but fallback below
-      if (dateUtils && typeof (dateUtils as any).format === 'function') {
-        return (dateUtils as any).format(iso);
-      }
-      const d = new Date(iso);
-      return d.toLocaleString();
-    } catch {
-      return iso;
-    }
-  };
 
   // Helper - normalize scheduledActivities to array of [key,value]
   const entriesFromScheduledActivities = (scheduledActivities: any): [string, string][] => {
@@ -177,10 +161,9 @@ export const BulletinsView: React.FC = () => {
       </div>
     );
   }
-
-  return (
-    <div className="space-y-1 p-8">
-      {/* Header */}
+    const HeroSection = () => (
+      <>
+              {/* Header */}
       <div className=' '>
       <div className="flex justify-between items-center mb-2">
         <div className='flex flex-row'>
@@ -193,20 +176,26 @@ export const BulletinsView: React.FC = () => {
         <div className="flex space-x-2">
           <Button
             onClick={() => setLayout(layout === 'grid' ? 'list' : 'grid')}
-            variant="outline"
+            variant="ghost"
             size="sm"
           >
             {layout === 'grid' ? 'List View' : 'Grid View'}
           </Button>
-          <Button variant="outline" size="sm" onClick={fetchBulletins}>
+          <Button variant="ghost" size="sm" onClick={fetchBulletins}>
             Refresh
           </Button>
         </div>
       </div>
       </div>
       <h2 className="text-lg font-bold text-gray-600 mb-6   ">Explore our church bulletins and schedules</h2>
+      </>
+    );
 
+  return (
+    <div className="space-y-1 px-8 pb-12 pt-2 bg-gradient-to-r to-accent-50 from-white ">
+      <HeroSection />
 
+    <strong><hr className="lg:my-5 md:my-3" /></strong>
       {/* Empty state */}
       {bulletins.length === 0 ? (
         <div className="text-center py-12">
@@ -293,7 +282,7 @@ export const BulletinsView: React.FC = () => {
 
                 <div className="flex space-x-2 mt-4">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -304,7 +293,7 @@ export const BulletinsView: React.FC = () => {
                     View
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -344,7 +333,7 @@ export const BulletinsView: React.FC = () => {
                   Status: <span className={`inline-block px-2 py-0.5 rounded text-xs ${getStatusColor(selectedBulletin.status)}`}>{selectedBulletin.status}</span>
                 </div>
                 {selectedBulletin.scheduledPublishAt && (
-                  <div className="text-sm text-gray-600">Scheduled Publish: {formatDateTime(selectedBulletin.scheduledPublishAt)}</div>
+                  <div className="text-sm text-gray-600">Scheduled Publish: {dateUtils.formatDateTime(selectedBulletin.scheduledPublishAt)}</div>
                 )}
                 <div className="text-xs text-gray-500 mt-2">
                   ID: {selectedBulletin.id}
@@ -352,8 +341,8 @@ export const BulletinsView: React.FC = () => {
               </div>
 
               <div className="text-right text-sm text-gray-600">
-                <div>Created: {formatDateTime(selectedBulletin.createdAt)}</div>
-                <div>Updated: {formatDateTime(selectedBulletin.updatedAt)}</div>
+                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt || new Date())}</div>
+                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt || new Date())}</div>
                 {/* createdBy / updatedBy may or may not exist on the object */}
                 {(selectedBulletin as any).createdBy && <div>By: {(selectedBulletin as any).createdBy}</div>}
                 {(selectedBulletin as any).updatedBy && <div>Updated by: {(selectedBulletin as any).updatedBy}</div>}
@@ -500,20 +489,20 @@ export const BulletinsView: React.FC = () => {
             {/* Footer: metadata + actions */}
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-600">
-                <div>Created: {formatDateTime(selectedBulletin.createdAt)}</div>
-                <div>Updated: {formatDateTime(selectedBulletin.updatedAt)}</div>
+                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt || new Date())}</div>
+                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt || new Date())}</div>
               </div>
 
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => handleExport(selectedBulletin.id, 'pdf')}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export PDF
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => handleExport(selectedBulletin.id, 'word')}
                 >
                   <Download className="w-4 h-4 mr-2" />
