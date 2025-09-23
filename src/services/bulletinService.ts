@@ -140,5 +140,11 @@ export const bulletinService = {
       params: { year }
     });
     return response.data.data;
+  },
+
+  // Get published bulletin summaries (ID and title only)
+  async getPublishedSummaries(): Promise<{ id: string; title: string }[]> {
+    const response = await api.get<ApiResponse<{ id: string; title: string }[]>>('/bulletins/published-summaries');
+    return response.data.data;
   }
 };

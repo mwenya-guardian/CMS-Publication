@@ -52,4 +52,20 @@ export const quoteService = {
     });
     return response.data.data.url;
   },
+
+  // Count methods for dashboard
+  async getTotalCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>('/quotes/count');
+    return response.data.data;
+  },
+
+  async getCountByYear(year: number): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`/quotes/count/year/${year}`);
+    return response.data.data;
+  },
+
+  async getFeaturedCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>('/quotes/count/featured');
+    return response.data.data;
+  },
 };

@@ -52,4 +52,25 @@ export const eventService = {
     });
     return response.data.data.url;
   },
+
+  // Count methods for dashboard
+  async getTotalCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>('/events/count');
+    return response.data.data;
+  },
+
+  async getCountByYear(year: number): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`/events/count/year/${year}`);
+    return response.data.data;
+  },
+
+  async getFeaturedCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>('/events/count/featured');
+    return response.data.data;
+  },
+
+  async getUpcomingCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>('/events/count/upcoming');
+    return response.data.data;
+  },
 };

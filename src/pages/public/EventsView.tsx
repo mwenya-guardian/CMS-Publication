@@ -101,7 +101,7 @@ export const EventsView: React.FC = () => {
   ) || searchTerm.length > 0;
 
   const HeroSection = () => (
-    <div className="bg-gradient-to-br from-secondary-600 via-secondary-700 to-secondary-800 text-white">
+    <div className="bg-gradient-to-br from-secondary-400 via-secondary-700 to-secondary-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <div className="flex justify-center mb-6">
@@ -110,7 +110,7 @@ export const EventsView: React.FC = () => {
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Quotes
+            Events
           </h1>
           <p className="text-xl text-secondary-100 mb-8 max-w-3xl mx-auto">
             Find inspiration in words of wisdom from the bible and other great sources
@@ -122,7 +122,7 @@ export const EventsView: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search quotes..."
+                placeholder="Search events..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"

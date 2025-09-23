@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ChurchBulletin, PublicationStatus } from '../../types/ChurchBulletin';
-import { BulletinList } from '../../components/bulletin/BulletinList';
 import { Modal } from '../../components/common/Modal';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { bulletinService } from '../../services/bulletinService';
 import { LayoutType, FilterOptions } from '../../types/Common';
 import { dateUtils } from '../../utils/dateUtils';
-import { Calendar, Clock, Users, Book, FileText, Eye, Download, Plus, BookOpen } from 'lucide-react';
+import { Calendar, Clock, Users, FileText, Eye, Download, BookOpen } from 'lucide-react';
 import { exportUtils } from '../../utils/exportUtils';
 
 export const BulletinsView: React.FC = () => {
   const [bulletins, setBulletins] = useState<ChurchBulletin[]>([]);
   const [selectedBulletin, setSelectedBulletin] = useState<ChurchBulletin | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({});
+  const [filters] = useState<FilterOptions>({});
   const [layout, setLayout] = useState<LayoutType>('list');
 
   useEffect(() => {
@@ -27,11 +25,9 @@ export const BulletinsView: React.FC = () => {
   const fetchBulletins = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await bulletinService.getAll(filters);
       setBulletins(data || []);
     } catch (err) {
-      setError('Failed to fetch bulletins');
       console.error('Error fetching bulletins:', err);
     } finally {
       setLoading(false);
@@ -43,9 +39,6 @@ export const BulletinsView: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleFilterChange = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
-  };
 
   const handleExport = async (bulletinId: string, format: 'pdf' | 'word') => {
     try {
@@ -162,40 +155,46 @@ export const BulletinsView: React.FC = () => {
     );
   }
     const HeroSection = () => (
-      <>
-              {/* Header */}
-      <div className=' '>
-      <div className="flex justify-between items-center mb-2">
-        <div className='flex flex-row'>
-          <p className="bg-white/10 rounded-full backdrop-blur-sm pt-1.5 pr-4">
-            <BookOpen className="h-12 w-12 text-primary-600" />
-          </p>
-          <h1 className="text-4xl md:text-5xl font-bold text-primary-500 mb-2">Church Bulletins</h1>
-          
-        </div>
-        <div className="flex space-x-2">
-          <Button
-            onClick={() => setLayout(layout === 'grid' ? 'list' : 'grid')}
-            variant="ghost"
-            size="sm"
-          >
-            {layout === 'grid' ? 'List View' : 'Grid View'}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={fetchBulletins}>
-            Refresh
-          </Button>
+      <div className="bg-gradient-to-tr from-accent-300 via-accent-400 to-accent-100 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/10 rounded-full backdrop-blur-sm">
+                <BookOpen className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">Church Bulletins</h1>
+                <p className="text-lg text-accent-100">Explore our church bulletins and schedules</p>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => setLayout(layout === 'grid' ? 'list' : 'grid')}
+                variant="ghost"
+                size="sm"
+                className="bg-white/10 text-white hover:bg-white/20"
+              >
+                {layout === 'grid' ? 'List View' : 'Grid View'}
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={fetchBulletins}
+                className="bg-white/10 text-white hover:bg-white/20"
+              >
+                Refresh
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-      </div>
-      <h2 className="text-lg font-bold text-gray-600 mb-6   ">Explore our church bulletins and schedules</h2>
-      </>
     );
 
   return (
-    <div className="space-y-1 px-8 pb-12 pt-2 bg-gradient-to-r to-accent-50 from-white ">
+    <div className="min-h-screen bg-gray-50">
       <HeroSection />
 
-    <strong><hr className="lg:my-5 md:my-3" /></strong>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Empty state */}
       {bulletins.length === 0 ? (
         <div className="text-center py-12">
@@ -284,8 +283,7 @@ export const BulletinsView: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       handleBulletinClick(bulletin);
                     }}
                   >
@@ -295,9 +293,8 @@ export const BulletinsView: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleExport(bulletin.id, 'pdf');
+                    onClick={() => {
+                      if (bulletin.id) handleExport(bulletin.id, 'pdf');
                     }}
                   >
                     <Download className="w-4 h-4 mr-1" />
@@ -462,7 +459,6 @@ export const BulletinsView: React.FC = () => {
                     <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
                       <h4 className="text-lg font-semibold text-gray-800 mb-1">{announcement.title}</h4>
                       <p className="text-gray-700">{announcement.content}</p>
-                      {announcement.bulletin && <div className="text-xs text-gray-500 mt-1">Related Bulletin: {announcement.bulletin.title}</div>}
                     </div>
                   ))}
                 </div>
@@ -496,14 +492,14 @@ export const BulletinsView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
-                  onClick={() => handleExport(selectedBulletin.id, 'pdf')}
+                  onClick={() => selectedBulletin.id && handleExport(selectedBulletin.id, 'pdf')}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export PDF
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => handleExport(selectedBulletin.id, 'word')}
+                  onClick={() => selectedBulletin.id && handleExport(selectedBulletin.id, 'word')}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export Word
@@ -514,6 +510,7 @@ export const BulletinsView: React.FC = () => {
           </div>
         </Modal>
       )}
+      </div>
     </div>
   );
 };

@@ -192,8 +192,8 @@ const Contacts: React.FC = () => {
         </div>
       </div>
 
-      {/* Emergency Contacts */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+      {/* Church Details */}
+      <div className="bg-gradient-to-b from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-6">
         <h2 className="text-xl font-bold text-yellow-800 mb-4">{churchDetails?.name}</h2>
         <p className="text-yellow-700 mb-4">
           P.O.Box {churchDetails?.poBox},  {churchDetails?.address}, {churchDetails?.city}, {churchDetails?.province}, {churchDetails?.country}.
@@ -229,7 +229,7 @@ const Contacts: React.FC = () => {
       </div>
 
       {/* Newsletter Signup */}
-      <div className="bg-gradient-to-r from-primary-700 to-primary-400 text-white rounded-lg p-6">
+      <div className="bg-gradient-to-t from-primary-700 to-primary-400 text-white rounded-lg p-6">
         <h2 className="text-2xl font-bold mb-4">Stay Connected</h2>
         <p className="text-blue-100 mb-6">
           Subscribe to our newsletter to receive updates about events, announcements, and church news.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Calendar, Quote, TrendingUp, Users, Eye } from 'lucide-react';
+import { FileText, Calendar, Quote, TrendingUp } from 'lucide-react';
 import { publicationService } from '../../services/publicationService';
 import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
@@ -40,50 +40,71 @@ export const Dashboard: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // Fetch all data
-        const [publications, events, quotes] = await Promise.all([
-          publicationService.getAll(),
-          eventService.getAll(),
-          quoteService.getAll(),
-        ]);
-
         const currentYear = dateUtils.getCurrentYear();
         
-        // Calculate stats
+        // Fetch count data using optimized endpoints
+        const [
+          publicationTotal,
+          publicationThisYear,
+          publicationFeatured,
+          eventTotal,
+          eventThisYear,
+          eventUpcoming,
+          quoteTotal,
+          quoteThisYear,
+          quoteFeatured
+        ] = await Promise.all([
+          publicationService.getTotalCount(),
+          publicationService.getCountByYear(currentYear),
+          publicationService.getFeaturedCount(),
+          eventService.getTotalCount(),
+          eventService.getCountByYear(currentYear),
+          eventService.getUpcomingCount(),
+          quoteService.getTotalCount(),
+          quoteService.getCountByYear(currentYear),
+          quoteService.getFeaturedCount(),
+        ]);
+
+        // Build stats from count data
         const publicationStats = {
-          total: publications.length,
-          thisYear: publications.filter(p => new Date(p.date).getFullYear() === currentYear).length,
-          featured: publications.filter(p => p.featured).length,
+          total: publicationTotal,
+          thisYear: publicationThisYear,
+          featured: publicationFeatured,
         };
 
         const eventStats = {
-          total: events.length,
-          thisYear: events.filter(e => new Date(e.startDate).getFullYear() === currentYear).length,
-          upcoming: events.filter(e => new Date(e.startDate) > new Date()).length,
+          total: eventTotal,
+          thisYear: eventThisYear,
+          upcoming: eventUpcoming,
         };
 
         const quoteStats = {
-          total: quotes.length,
-          thisYear: quotes.filter(q => new Date(q.createdAt).getFullYear() === currentYear).length,
-          featured: quotes.filter(q => q.featured).length,
+          total: quoteTotal,
+          thisYear: quoteThisYear,
+          featured: quoteFeatured,
         };
 
-        // Calculate yearly data
-        const years = new Set([
-          ...publications.map(p => new Date(p.date).getFullYear()),
-          ...events.map(e => new Date(e.startDate).getFullYear()),
-          ...quotes.map(q => new Date(q.createdAt).getFullYear()),
-        ]);
+        // For yearly data, we'll need to fetch counts for the last 5 years
+        const currentYearNum = currentYear;
+        const yearlyDataPromises = [];
+        
+        for (let i = 0; i < 3; i++) {
+          const year = currentYearNum - i;
+          yearlyDataPromises.push(
+            Promise.all([
+              publicationService.getCountByYear(year),
+              eventService.getCountByYear(year),
+              quoteService.getCountByYear(year),
+            ]).then(([pubCount, eventCount, quoteCount]) => ({
+              year,
+              publications: pubCount,
+              events: eventCount,
+              quotes: quoteCount,
+            }))
+          );
+        }
 
-        const yearlyData = Array.from(years)
-          .sort((a, b) => b - a)
-          .slice(0, 5)
-          .map(year => ({
-            year,
-            publications: publications.filter(p => new Date(p.date).getFullYear() === year).length,
-            events: events.filter(e => new Date(e.startDate).getFullYear() === year).length,
-            quotes: quotes.filter(q => new Date(q.createdAt).getFullYear() === year).length,
-          }));
+        const yearlyData = await Promise.all(yearlyDataPromises);
 
         setStats({
           publications: publicationStats,

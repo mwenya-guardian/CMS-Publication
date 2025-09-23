@@ -11,16 +11,18 @@ interface QuoteCardProps {
   onEdit?: (quote: Quote) => void;
   onDelete?: (id: string) => void;
   onView?: (quote: Quote) => void;
+  showReadMore?: boolean;
   className?: string;
 }
 
 export const QuoteCard: React.FC<QuoteCardProps> = ({
   quote,
-  layoutType = 'grid',
+  layoutType = 'list',
   isAdmin = false,
   onEdit,
   onDelete,
   onView,
+  showReadMore = true,
   className = '',
 }) => {
   const handleEdit = (e: React.MouseEvent) => {
@@ -95,8 +97,8 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
               </div>
               {isAdmin && (
                 <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
-                  <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit}></Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2}></Button>
                 </div>
               )}
             </div>
@@ -127,31 +129,24 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
           </div>
           {isAdmin && (
             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
-              <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
+              <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit} />
+              <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2} />
             </div>
           )}
         </div>
         
         <div className="border-t border-gray-100 pt-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center text-sm font-medium text-gray-900">
-                <User className="w-4 h-4 mr-1" />
-                {quote.author}
-              </div>
-              {quote.source && (
-                <span className="text-sm text-gray-500">— {quote.source}</span>
-              )}
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="flex items-center text-sm font-medium text-gray-900">
+              <User className="w-4 h-4 mr-1" />
+              {quote.author}
             </div>
-            {!isAdmin && (
-              <Button variant="ghost" size="sm" icon={Eye}>
-                View
-              </Button>
+            {quote.source && (
+              <span className="text-sm text-gray-500">— {quote.source}</span>
             )}
           </div>
           
-          <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center text-xs text-gray-500">
               <Calendar className="w-3 h-3 mr-1" />
               {dateUtils.formatDate(quote.createdAt)}
@@ -163,6 +158,14 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             )}
           </div>
         </div>
+        
+        {!isAdmin && showReadMore && (
+          <div className="mt-4 flex justify-end">
+            <Button variant="ghost" size="sm" icon={Eye}>
+              View
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

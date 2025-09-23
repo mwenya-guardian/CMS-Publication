@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Publication } from '../../types/Publication';
 import { PublicationList } from '../../components/publications/PublicationList';
-import { PublicationCard } from '../../components/publications/PublicationCard';
 import { DateFilterBar } from '../../components/filters/DateFilterBar';
 import { Modal } from '../../components/common/Modal';
 import { Button } from '../../components/common/Button';
-import { Input } from '../../components/common/Input';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { Search, Filter, X, FileText, Calendar, User } from 'lucide-react';
+import { Search, Filter, X, FileText, Calendar, User, Rss } from 'lucide-react';
 import { publicationService } from '../../services/publicationService';
 import { LayoutType, FilterOptions } from '../../types/Common';
 import { dateUtils } from '../../utils/dateUtils';
@@ -107,12 +104,12 @@ export const PublicationsView: React.FC = () => {
   ) || searchTerm.length > 0;
 
   const HeroSection = () => (
-    <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white">
+    <div className="bg-gradient-to-br from-primary-400 via-primary-700 to-primary-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <div className="p-4 bg-white/10 rounded-full backdrop-blur-sm">
-              <FileText className="h-12 w-12 text-white" />
+              <Rss className="h-12 w-12 text-white" />
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">

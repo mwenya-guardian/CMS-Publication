@@ -1,11 +1,11 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Calendar, Quote, BookOpen ,Menu, X, CircleUserRoundIcon, Info} from 'lucide-react';
+import { Home, FileText, Calendar, Quote, BookOpen ,Menu, X, CircleUserRoundIcon, Info, Rss} from 'lucide-react';
 import { useState } from 'react';
 import { faithPrinciples } from '../../data/mockData';
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Publications', href: '/publications', icon: FileText },
+  { name: 'Publications', href: '/publications', icon: Rss },
   { name: 'Events', href: '/events', icon: Calendar },
   { name: 'Quotes', href: '/quotes', icon: Quote },
   { name: 'Bulletins', href: '/bulletins', icon: BookOpen },
@@ -19,7 +19,7 @@ export const PublicLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 border-b-2 border-primary-600">
       {/* Navigation */}
-      <nav className="bg-gradient-to-r from-white to-accent-50 shadow-sm border-b border-gray-200">
+      <nav className="bg-gradient-to-l from-white to-accent-50 shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-2">
           <div className="flex justify-between h-16">
             <div className="flex items-center mr-auto">

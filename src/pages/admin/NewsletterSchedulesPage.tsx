@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { newsletterScheduleService } from '../../services/newsletterScheduleService';
+import { bulletinService } from '../../services/bulletinService';
 import { NewsletterSchedule, NewsletterScheduleCreate } from '../../types/NewsletterSchedule';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Modal } from '../../components/common/Modal';
-import { Plus, Play, Pause, Pencil, Trash2, Clock } from 'lucide-react';
+import { Plus, Play, Pencil, Trash2 } from 'lucide-react';
 
 export const NewsletterSchedulesPage: React.FC = () => {
   const [schedules, setSchedules] = useState<NewsletterSchedule[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [bulletins, setBulletins] = useState<{ id: string; title: string }[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState<NewsletterSchedule | null>(null);
@@ -36,8 +38,12 @@ export const NewsletterSchedulesPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await newsletterScheduleService.getAll();
-      setSchedules(data);
+      const [schedulesData, bulletinsData] = await Promise.all([
+        newsletterScheduleService.getAll(),
+        bulletinService.getPublishedSummaries()
+      ]);
+      setSchedules(schedulesData);
+      setBulletins(bulletinsData);
     } catch (e) {
       console.error(e);
       setError('Failed to load schedules');
@@ -349,8 +355,23 @@ export const NewsletterSchedulesPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Bulletin IDs (comma-separated)</label>
-                <input className="mt-1 w-full px-3 py-2 border rounded-md" value={form.bulletinIds.join(',')} onChange={(e) => setForm({ ...form, bulletinIds: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })} />
+                <label className="block text-sm font-medium text-gray-700">Select Bulletins</label>
+                <select 
+                  multiple 
+                  className="mt-1 w-full px-3 py-2 border rounded-md h-32"
+                  value={form.bulletinIds}
+                  onChange={(e) => {
+                    const selectedIds = Array.from(e.target.selectedOptions, option => option.value);
+                    setForm({ ...form, bulletinIds: selectedIds });
+                  }}
+                >
+                  {bulletins.map((bulletin) => (
+                    <option key={bulletin.id} value={bulletin.id}>
+                      {bulletin.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple bulletins</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Send To All Subscribers</label>

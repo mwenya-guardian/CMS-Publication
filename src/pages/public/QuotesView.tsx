@@ -101,7 +101,7 @@ export const QuotesView: React.FC = () => {
   ) || searchTerm.length > 0;
 
   const HeroSection = () => (
-    <div className="bg-gradient-to-br from-accent-600 via-accent-700 to-accent-800 text-white">
+    <div className="bg-gradient-to-br from-accent-400 via-accent-500 to-accent-700 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <div className="flex justify-center mb-6">

@@ -15,7 +15,8 @@ import {
   UserCog,
   Church,
   Clock,
-  AudioLines
+  AudioLines,
+  Rss
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
@@ -43,7 +44,7 @@ export const AdminLayout: React.FC = () => {
   if (user?.role?.toUpperCase() == 'ADMIN') {
       navigation = [
         { name: 'Dashboard', href: '/admin', icon: Home },
-        { name: 'Publications', href: '/admin/publications', icon: FileText },
+        { name: 'Publications', href: '/admin/publications', icon: Rss },
         { name: 'Events', href: '/admin/events', icon: Calendar },
         { name: 'Quotes', href: '/admin/quotes', icon: Quote },   
         { name: 'Posts', href: '/admin/posts', icon: AudioLines },

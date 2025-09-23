@@ -99,12 +99,12 @@ export const UserList: React.FC<UserListProps> = ({
             )}
           </div>
 
-          <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
+          <div className="mt-3 py-2 gap-4 grin grid-cols-1 grid-rows-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 col-span-2 mb-2">
               <Mail className="w-4 h-4 text-gray-400" />
               <span className="truncate max-w-[220px]" title={user.email}>{user.email}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 col-span-2">
               <Clock className="w-4 h-4 text-gray-400" />
               <span title={lastLogin}>{lastLogin}</span>
             </div>
@@ -123,14 +123,14 @@ export const UserList: React.FC<UserListProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onLayoutChange('grid')}
-              className={`px-2 py-1 rounded ${layoutType === 'grid' ? 'bg-gray-100' : ''}`}
+              className={`px-2 py-1 rounded ${layoutType === 'grid' ? 'bg-gray-300' : ''}`}
               aria-label="Grid view"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/><rect x="13" y="3" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/><rect x="3" y="13" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/><rect x="13" y="13" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/></svg>
             </button>
             <button
               onClick={() => onLayoutChange('list')}
-              className={`px-2 py-1 rounded ${layoutType === 'list' ? 'bg-gray-100' : ''}`}
+              className={`px-2 py-1 rounded ${layoutType === 'list' ? 'bg-gray-300' : ''}`}
               aria-label="List view"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
