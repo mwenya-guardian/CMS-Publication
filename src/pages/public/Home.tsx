@@ -318,7 +318,7 @@ export const Home: React.FC = () => {
 
         <div className="text-center mt-2">
           <Link to={viewAllLink}>
-            <Button variant="ghost" size="lg">
+            <Button variant="ghost" size="lg" className='bg-inherit hover:bg-inherit text-grey-500 hover:text-secondary-600'>
               View All
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Calendar, Quote, TrendingUp } from 'lucide-react';
+import { FileText, Calendar, Quote, TrendingUp, Newspaper, Users } from 'lucide-react';
 import { publicationService } from '../../services/publicationService';
 import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
+import { bulletinService } from '../../services/bulletinService';
+import { newsletterService } from '../../services/newsletterService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { dateUtils } from '../../utils/dateUtils';
 
@@ -22,11 +24,28 @@ interface StatsData {
     thisYear: number;
     featured: number;
   };
+  bulletins: {
+    total: number;
+    thisYear: number;
+    published: number;
+  };
+  newsletterSubscribers: {
+    total: number;
+    thisYear: number;
+    active: number;
+  };
   yearlyData: {
     year: number;
     publications: number;
     events: number;
     quotes: number;
+    bulletins: number;
+  }[];
+  newsletterYearlyData: {
+    year: number;
+    total: number;
+    active: number;
+    inactive: number;
   }[];
 }
 
@@ -52,7 +71,13 @@ export const Dashboard: React.FC = () => {
           eventUpcoming,
           quoteTotal,
           quoteThisYear,
-          quoteFeatured
+          quoteFeatured,
+          bulletinTotal,
+          bulletinThisYear,
+          bulletinPublished,
+          newsletterTotal,
+          newsletterThisYear,
+          newsletterActive
         ] = await Promise.all([
           publicationService.getTotalCount(),
           publicationService.getCountByYear(currentYear),
@@ -63,6 +88,12 @@ export const Dashboard: React.FC = () => {
           quoteService.getTotalCount(),
           quoteService.getCountByYear(currentYear),
           quoteService.getFeaturedCount(),
+          bulletinService.getTotalCount(),
+          bulletinService.getCountByYear(currentYear),
+          bulletinService.getPublishedCount(),
+          newsletterService.getTotalCount(),
+          newsletterService.getCountByYear(currentYear),
+          newsletterService.getActiveCount(),
         ]);
 
         // Build stats from count data
@@ -84,9 +115,22 @@ export const Dashboard: React.FC = () => {
           featured: quoteFeatured,
         };
 
-        // For yearly data, we'll need to fetch counts for the last 5 years
+        const bulletinStats = {
+          total: bulletinTotal,
+          thisYear: bulletinThisYear,
+          published: bulletinPublished,
+        };
+
+        const newsletterStats = {
+          total: newsletterTotal,
+          thisYear: newsletterThisYear,
+          active: newsletterActive,
+        };
+
+        // For yearly data, we'll need to fetch counts for the last 3 years
         const currentYearNum = currentYear;
         const yearlyDataPromises = [];
+        const newsletterYearlyDataPromises = [];
         
         for (let i = 0; i < 3; i++) {
           const year = currentYearNum - i;
@@ -95,22 +139,43 @@ export const Dashboard: React.FC = () => {
               publicationService.getCountByYear(year),
               eventService.getCountByYear(year),
               quoteService.getCountByYear(year),
-            ]).then(([pubCount, eventCount, quoteCount]) => ({
+              bulletinService.getCountByYear(year),
+            ]).then(([pubCount, eventCount, quoteCount, bulletinCount]) => ({
               year,
               publications: pubCount,
               events: eventCount,
               quotes: quoteCount,
+              bulletins: bulletinCount,
+            }))
+          );
+
+          newsletterYearlyDataPromises.push(
+            Promise.all([
+              newsletterService.getCountByYear(year),
+              newsletterService.getActiveCountByYear(year),
+              newsletterService.getInactiveCountByYear(year),
+            ]).then(([totalCount, activeCount, inactiveCount]) => ({
+              year,
+              total: totalCount,
+              active: activeCount,
+              inactive: inactiveCount,
             }))
           );
         }
 
-        const yearlyData = await Promise.all(yearlyDataPromises);
+        const [yearlyData, newsletterYearlyData] = await Promise.all([
+          Promise.all(yearlyDataPromises),
+          Promise.all(newsletterYearlyDataPromises)
+        ]);
 
         setStats({
           publications: publicationStats,
           events: eventStats,
           quotes: quoteStats,
+          bulletins: bulletinStats,
+          newsletterSubscribers: newsletterStats,
           yearlyData,
+          newsletterYearlyData,
         });
       } catch (err) {
         setError('Failed to load dashboard data');
@@ -174,7 +239,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
         <StatCard
           title="Publications"
           value={stats.publications.total}
@@ -196,6 +261,20 @@ export const Dashboard: React.FC = () => {
           icon={Quote}
           color="bg-accent-600"
         />
+        <StatCard
+          title="Bulletins"
+          value={stats.bulletins.total}
+          subtitle={`${stats.bulletins.thisYear} this year, ${stats.bulletins.published} published`}
+          icon={Newspaper}
+          color="bg-green-600"
+        />
+        <StatCard
+          title="Newsletter Subscribers"
+          value={stats.newsletterSubscribers.total}
+          subtitle={`${stats.newsletterSubscribers.thisYear} this year, ${stats.newsletterSubscribers.active} active`}
+          icon={Users}
+          color="bg-purple-600"
+        />
       </div>
 
       {/* Content by Year */}
@@ -215,6 +294,10 @@ export const Dashboard: React.FC = () => {
               <div className="w-3 h-3 bg-accent-500 rounded-full mr-2"></div>
               <span className="text-gray-600">Quotes</span>
             </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+              <span className="text-gray-600">Bulletins</span>
+            </div>
           </div>
         </div>
         
@@ -230,19 +313,25 @@ export const Dashboard: React.FC = () => {
                     <div 
                       className="bg-primary-500" 
                       style={{ 
-                        width: `${Math.max((yearData.publications / (yearData.publications + yearData.events + yearData.quotes)) * 100, 5)}%` 
+                        width: `${Math.max((yearData.publications / (yearData.publications + yearData.events + yearData.quotes + yearData.bulletins)) * 100, 5)}%` 
                       }}
                     />
                     <div 
                       className="bg-secondary-500" 
                       style={{ 
-                        width: `${Math.max((yearData.events / (yearData.publications + yearData.events + yearData.quotes)) * 100, 5)}%` 
+                        width: `${Math.max((yearData.events / (yearData.publications + yearData.events + yearData.quotes + yearData.bulletins)) * 100, 5)}%` 
                       }}
                     />
                     <div 
                       className="bg-accent-500" 
                       style={{ 
-                        width: `${Math.max((yearData.quotes / (yearData.publications + yearData.events + yearData.quotes)) * 100, 5)}%` 
+                        width: `${Math.max((yearData.quotes / (yearData.publications + yearData.events + yearData.quotes + yearData.bulletins)) * 100, 5)}%` 
+                      }}
+                    />
+                    <div 
+                      className="bg-green-500" 
+                      style={{ 
+                        width: `${Math.max((yearData.bulletins / (yearData.publications + yearData.events + yearData.quotes + yearData.bulletins)) * 100, 5)}%` 
                       }}
                     />
                   </div>
@@ -251,6 +340,61 @@ export const Dashboard: React.FC = () => {
                   <span>{yearData.publications}P</span>
                   <span>{yearData.events}E</span>
                   <span>{yearData.quotes}Q</span>
+                  <span>{yearData.bulletins}B</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Newsletter Subscribers by Year */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">Newsletter Subscribers by Year</h2>
+          <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+              <span className="text-gray-600">Total</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+              <span className="text-gray-600">Active</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+              <span className="text-gray-600">Inactive</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          {stats.newsletterYearlyData.map((yearData) => (
+            <div key={yearData.year} className="flex items-center">
+              <div className="w-16 text-sm font-medium text-gray-900">
+                {yearData.year}
+              </div>
+              <div className="flex-1 flex items-center space-x-2">
+                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <div className="flex h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-green-500" 
+                      style={{ 
+                        width: `${Math.max((yearData.active / yearData.total) * 100, 5)}%` 
+                      }}
+                    />
+                    <div 
+                      className="bg-red-500" 
+                      style={{ 
+                        width: `${Math.max((yearData.inactive / yearData.total) * 100, 5)}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <span>{yearData.total} Total</span>
+                  <span className="text-green-600">{yearData.active} Active</span>
+                  <span className="text-red-600">{yearData.inactive} Inactive</span>
                 </div>
               </div>
             </div>

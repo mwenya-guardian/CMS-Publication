@@ -155,7 +155,7 @@ export const BulletinsView: React.FC = () => {
     );
   }
     const HeroSection = () => (
-      <div className="bg-gradient-to-tr from-accent-300 via-accent-400 to-accent-100 text-white">
+      <div className="bg-gradient-to-tr from-accent-100 via-indigo-800 to-accent-100 text-xl text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -458,8 +458,12 @@ export const BulletinsView: React.FC = () => {
                   {selectedBulletin.announcements.map((announcement, index) => (
                     <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
                       <h4 className="text-lg font-semibold text-gray-800 mb-1">{announcement.title}</h4>
-                      <p className="text-gray-700">{announcement.content}</p>
-                    </div>
+                      {/* <p className="text-gray-700">{announcement.content}</p> */}
+                      <div className="prose max-w-none">
+                        {/* Danger: rendering HTML — if content originates from users, sanitize on the server */}
+                        <div dangerouslySetInnerHTML={{ __html: announcement.content }} />
+                        </div>
+                      </div>
                   ))}
                 </div>
               </div>

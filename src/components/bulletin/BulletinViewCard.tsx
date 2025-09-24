@@ -163,7 +163,11 @@ export const BulletinViewCard: React.FC<BulletinCardProps> = ({
               {bulletin.announcements.map((announcement, index) => (
                 <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
                   <h4 className="text-lg font-semibold text-gray-800 mb-1">{announcement.title}</h4>
-                  <p className="text-gray-700">{announcement.content}</p>
+                  {/* <p className="text-gray-700">{announcement.content}</p> */}
+                  <div className="prose max-w-none">
+                    {/* Danger: rendering HTML — if content originates from users, sanitize on the server */}
+                    <div dangerouslySetInnerHTML={{ __html: announcement.content }} />
+                  </div>
                   {announcement.content && <div className="text-xs text-gray-500 mt-1">Related Bulletin: {bulletin.title}</div>}
                 </div>
               ))}

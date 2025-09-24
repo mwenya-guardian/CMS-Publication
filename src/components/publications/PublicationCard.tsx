@@ -130,7 +130,7 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
             {publication.tags.map((tag, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-primary-800"
               >
                 {tag}
               </span>

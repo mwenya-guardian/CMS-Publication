@@ -41,8 +41,8 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
   const getCategoryColor = (category?: string) => {
     const colors = {
-      inspirational: 'bg-blue-100 text-blue-800',
-      motivational: 'bg-green-100 text-green-800',
+      inspirational: 'bg-primary-100 text-primary-800',
+      motivational: 'bg-secondary-100 text-secondary-800',
       wisdom: 'bg-purple-100 text-purple-800',
       love: 'bg-pink-100 text-pink-800',
       life: 'bg-yellow-100 text-yellow-800',

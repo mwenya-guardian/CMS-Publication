@@ -58,7 +58,7 @@ const Contacts: React.FC = () => {
             <Users className="w-6 h-6 mr-2 text-blue-600" />
             Pastoral
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pastoral.map((contact) => (
             <div key={contact.id} className="bg-gray-50 rounded-lg p-4">
               <div className="mb-3">
@@ -93,7 +93,7 @@ const Contacts: React.FC = () => {
             <Users className="w-6 h-6 mr-2 text-blue-600" />
             Departments
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {departmental.map((contact) => (
             <div key={contact.id} className="bg-gray-50 rounded-lg p-4">
               <div className="mb-3">
@@ -128,7 +128,7 @@ const Contacts: React.FC = () => {
             <Users className="w-6 h-6 mr-2 text-blue-600" />
             Elders
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {elders.map((contact) => (
             <div key={contact.id} className="bg-gray-50 rounded-lg p-4">
               <div className="mb-3">
@@ -169,7 +169,7 @@ const Contacts: React.FC = () => {
             Need prayer? Our prayer team is available to pray with you and for you. 
             Don't hesitate to reach out during times of need, celebration, or when you simply need spiritual support.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="flex items-center bg-white rounded-lg p-4">
                 <Phone className="w-5 h-5 mr-3 text-red-600" />
                 <a 
