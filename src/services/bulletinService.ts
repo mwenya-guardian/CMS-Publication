@@ -140,5 +140,27 @@ export const bulletinService = {
       params: { year }
     });
     return response.data.data;
+  },
+
+  // Get published bulletin summaries (ID and title only)
+  async getPublishedSummaries(): Promise<{ id: string; title: string }[]> {
+    const response = await api.get<ApiResponse<{ id: string; title: string }[]>>('/bulletins/published-summaries');
+    return response.data.data;
+  },
+
+  // Count methods for dashboard
+  async getTotalCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>('/bulletins/count');
+    return response.data.data;
+  },
+
+  async getCountByYear(year: number): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`/bulletins/count/year/${year}`);
+    return response.data.data;
+  },
+
+  async getPublishedCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>('/bulletins/count/published');
+    return response.data.data;
   }
 };

@@ -5,21 +5,23 @@ import { Button } from '../common/Button';
 
 interface EventCardProps {
   event: Event;
-  layoutType?: 'grid' | 'list';
+  layoutType?: 'grid' | 'list' | 'masonry';
   isAdmin?: boolean;
   onEdit?: (event: Event) => void;
   onDelete?: (id: string) => void;
   onView?: (event: Event) => void;
+  showReadMore?: boolean;
   className?: string;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({
   event,
-  layoutType = 'grid',
+  layoutType = 'list',
   isAdmin = false,
   onEdit,
   onDelete,
   onView,
+  showReadMore = true,
   className = '',
 }) => {
   const handleEdit = (e: React.MouseEvent) => {
@@ -79,12 +81,14 @@ export const EventCard: React.FC<EventCardProps> = ({
                 <div className="flex items-center text-sm text-gray-500 space-x-4">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
-                    {dateUtils.formatDate(event.startDate)}
+                    <span className="font-medium">Start:</span>
+                    <span className="ml-1">{dateUtils.formatDate(event.startDate)}</span>
                   </div>
                   {event.endDate && event.endDate !== event.startDate && (
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      to {dateUtils.formatDate(event.endDate)}
+                      <span className="font-medium">End:</span>
+                      <span className="ml-1">{dateUtils.formatDate(event.endDate)}</span>
                     </div>
                   )}
                   {event.location && (
@@ -97,8 +101,8 @@ export const EventCard: React.FC<EventCardProps> = ({
               </div>
               {isAdmin && (
                 <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
-                  <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit}></Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2}></Button>
                 </div>
               )}
             </div>
@@ -129,8 +133,8 @@ export const EventCard: React.FC<EventCardProps> = ({
               </h3>
               {isAdmin && (
                 <div className="flex items-center space-x-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
-                  <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit}></Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2}></Button>
                 </div>
               )}
             </div>
@@ -143,11 +147,16 @@ export const EventCard: React.FC<EventCardProps> = ({
         <div className="space-y-2 text-sm text-gray-500">
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
-            {dateUtils.formatDate(event.startDate)}
-            {event.endDate && event.endDate !== event.startDate && (
-              <span className="ml-1">- {dateUtils.formatDate(event.endDate)}</span>
-            )}
+            <span className="font-medium">Start:</span>
+            <span className="ml-1">{dateUtils.formatDate(event.startDate)}</span>
           </div>
+          {event.endDate && event.endDate !== event.startDate && (
+            <div className="flex items-center">
+              <Clock className="w-4 h-4 mr-2" />
+              <span className="font-medium">End:</span>
+              <span className="ml-1">{dateUtils.formatDate(event.endDate)}</span>
+            </div>
+          )}
           {event.location && (
             <div className="flex items-center">
               <MapPin className="w-4 h-4 mr-2" />
@@ -155,10 +164,10 @@ export const EventCard: React.FC<EventCardProps> = ({
             </div>
           )}
         </div>
-        {!isAdmin && (
+        {!isAdmin && showReadMore && (
           <div className="mt-4 flex justify-end">
             <Button variant="ghost" size="sm" icon={Eye}>
-              View details
+              View
             </Button>
           </div>
         )}

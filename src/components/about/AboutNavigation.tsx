@@ -8,7 +8,8 @@ import {
   Settings,
   CreditCard,
   Contact,
-  FileText
+  FileText,
+  HeartHandshake
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -19,8 +20,9 @@ interface NavigationProps {
 const AboutNavigation: React.FC<NavigationProps> = ({ activeSection, setActiveSection }) => {
 
   const navigationItems = [
-    { id: 'giving', label: 'Giving', icon: CreditCard, public: true },
-    { id: 'contacts', label: 'Contacts', icon: Contact, public: true }
+    { id: 'contacts', label: 'Contacts', icon: Contact, public: true },
+    { id: 'giving', label: 'Tithe & Giving', icon: HeartHandshake, public: true }
+  
   ];
 
   const filteredItems = navigationItems.filter(item => {

@@ -3,6 +3,7 @@ import { CreditCard, Building, Phone, Heart, Calendar } from 'lucide-react';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import givingService from '../../services/givingService';
 import { Giving as Give } from '../../types/Giving';
+import { capitalizeFirst, capitalizeWords } from '../../utils/textUtils'
 
 const Giving: React.FC = () => {
   const [gives, setGives] = useState<Give[]>([]);
@@ -29,8 +30,12 @@ const Giving: React.FC = () => {
   }, []);
 
   const isMobileMoneyFirst = (g: Give) => {
-    const first = (g.method && g.method[0]) || '';
-    return String(first).toLowerCase().includes('mobile money');
+    const first = (g.title) || '';
+    const methodLower = String(first).toLowerCase();
+    return methodLower.includes('mobile money') || 
+           methodLower.includes('mtn') || 
+           methodLower.includes('airtel') || 
+           methodLower.includes('zamtel'); 
   };
 
   if (loading) {
@@ -73,7 +78,6 @@ const Giving: React.FC = () => {
         ) : (
           gives.map((g) => {
             const mobileFirst = isMobileMoneyFirst(g);
-            const Icon = mobileFirst ? Phone : Building;
 
             return (
               <div key={g.id ?? g.title} className="bg-white rounded-lg shadow-md p-6">
@@ -87,7 +91,7 @@ const Giving: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800">{g.title.charAt(0).toUpperCase() + g.title.slice(1)}</h3>
+                      <h3 className="text-lg font-semibold text-gray-800">{capitalizeWords(g.title)}</h3>
                       <div className="text-sm text-gray-500">
                         {g.method?.length ? `${g.method.length} method(s)` : 'No methods'}
                       </div>
@@ -104,7 +108,7 @@ const Giving: React.FC = () => {
                     <ul className="space-y-1">
                       {g.method.map((m, i) => (
                         <li key={i} className="text-sm text-gray-600">
-                          • {m}
+                          • {capitalizeFirst(m)}
                         </li>
                       ))}
                     </ul>

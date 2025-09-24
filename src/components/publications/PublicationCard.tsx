@@ -11,16 +11,18 @@ interface PublicationCardProps {
   onEdit?: (publication: Publication) => void;
   onDelete?: (id: string) => void;
   onView?: (publication: Publication) => void;
+  showReadMore?: boolean;
   className?: string;
 }
 
 export const PublicationCard: React.FC<PublicationCardProps> = ({
   publication,
-  layoutType = 'grid',
+  layoutType = 'list',
   isAdmin = false,
   onEdit,
   onDelete,
   onView,
+  showReadMore = true,
   className = '',
 }) => {
   const handleEdit = (e: React.MouseEvent) => {
@@ -76,8 +78,8 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
               </div>
               {isAdmin && (
                 <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit}  />
-                  <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit}></Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2}></Button>
                 </div>
               )}
             </div>
@@ -105,29 +107,22 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
           </h3>
           {isAdmin && (
             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
-              <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
+              <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit} />
+              <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2} />
             </div>
           )}
         </div>
         <p className="text-gray-600 mb-4 line-clamp-3">{publication.content}</p>
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-1" />
-              {dateUtils.formatDate(publication.date)}
-            </div>
-            {publication.author && (
-              <div className="flex items-center">
-                <User className="w-4 h-4 mr-1" />
-                {publication.author}
-              </div>
-            )}
+        <div className="flex items-center text-sm text-gray-500 space-x-4">
+          <div className="flex items-center">
+            <Calendar className="w-4 h-4 mr-1" />
+            {dateUtils.formatDate(publication.date)}
           </div>
-          {!isAdmin && (
-            <Button variant="ghost" size="sm" icon={Eye}>
-              Read more
-            </Button>
+          {publication.author && (
+            <div className="flex items-center">
+              <User className="w-4 h-4 mr-1" />
+              {publication.author}
+            </div>
           )}
         </div>
         {publication.tags && publication.tags.length > 0 && (
@@ -135,11 +130,19 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
             {publication.tags.map((tag, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-primary-800"
               >
                 {tag}
               </span>
             ))}
+          </div>
+        )}
+        
+        {!isAdmin && showReadMore && (
+          <div className="mt-4 flex justify-end">
+            <Button variant="ghost" size="sm" icon={Eye}>
+              View
+            </Button>
           </div>
         )}
       </div>

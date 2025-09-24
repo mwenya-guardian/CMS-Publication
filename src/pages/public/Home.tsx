@@ -48,7 +48,7 @@ export const Home: React.FC = () => {
       subtitle: "Welcome to our worship schedule service",
       description: "We would love to share the word with you.",
       image: sdalogo,
-      ctaLabel: 'Register',
+      ctaLabel: 'Newsletters',
       ctaLink: '/register', 
     },
     {
@@ -63,7 +63,7 @@ export const Home: React.FC = () => {
         'together and do come again. Please note that our services' +
         'are carried live on Facebook and YouTube.',
       image: sdalogo,
-      ctaLabel: 'Register',
+      ctaLabel: 'Newsletters',
       ctaLink: '/register',
     },
     {
@@ -75,7 +75,7 @@ export const Home: React.FC = () => {
         'Jesus Christ in and around our territorial neighborhood. through Evangelism, ' +
         'Nurture and Stewardship. May God less you as we worship together in Spirit and Truth!',
       image: sdalogo,
-      ctaLabel: 'Register',
+      ctaLabel: 'Newsletters',
       ctaLink: '/register',
     },
   ];
@@ -302,9 +302,9 @@ export const Home: React.FC = () => {
     viewAllLink: string;
     children: React.ReactNode;
   }> = ({ title, description, icon: Icon, viewAllLink, children }) => (
-    <div className="bg-gradient-to-r from-white to-primary-50 py-10">
+    <div className="bg-gradient-to-br from-white to-accent-100 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-green-50 rounded-full">
               <Icon className="h-8 w-8 text-secondary-500" />
@@ -316,9 +316,9 @@ export const Home: React.FC = () => {
 
         {children}
 
-        <div className="text-center mt-6">
+        <div className="text-center mt-2">
           <Link to={viewAllLink}>
-            <Button variant="outline" size="lg">
+            <Button variant="ghost" size="lg" className='bg-inherit hover:bg-inherit text-grey-500 hover:text-secondary-600'>
               View All
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -370,7 +370,7 @@ export const Home: React.FC = () => {
         </div>
       </div>
 
-      <div id="featured-content" className="bg-gray-50 mt-8 py-10">
+      <div id="featured-content" className="bg-gray-50 mt-8 py-6">
         {/* Featured Publications */}
         {featuredPublications.length > 0 && (
           <FeaturedSection
@@ -388,8 +388,11 @@ export const Home: React.FC = () => {
                     </div>
                   </div>
                   <PublicationCard
+                    className='bg-gradient-to-tl from-accent-100 via-accent-50 to-prmary-50'
                     publication={publication}
+                    layoutType="grid"
                     onView={() => {}}
+                    showReadMore={false}
                   />
                 </div>
               ))}
@@ -414,9 +417,12 @@ export const Home: React.FC = () => {
                  </div>
               </div>
                 <EventCard
+                  className='bg-gradient-to-tl from-accent-100 via-accent-50 to-prmary-50'
                   key={event.id}
                   event={event}
+                  layoutType="grid"
                   onView={() => {}}
+                  showReadMore={false}
                 />
                 </div>
               ))}
@@ -441,8 +447,11 @@ export const Home: React.FC = () => {
                     </div>
                   </div>
                   <QuoteCard
+                    className='bg-gradient-to-tl from-accent-100 via-accent-50 to-prmary-50'
                     quote={quote}
+                    layoutType="grid"
                     onView={() => {}}
+                    showReadMore={false}
                   />
                 </div>
               ))}
@@ -453,7 +462,7 @@ export const Home: React.FC = () => {
 
       {/* Newsletter Signup */}
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        <div className="bg-gradient-to-r from-secondary-600 to-secondary-400 text-white rounded-lg p-8 flex flex-col md:flex-row items-center gap-6">
+        <div className="bg-gradient-to-br from-primary-800 to-prmary-300 text-white rounded-lg p-8 flex flex-col md:flex-row items-center gap-6">
           <div className="flex-1">
             <h2 className="text-2xl font-bold mb-2">Stay Connected</h2>
             <p className="text-green-100 mb-4 max-w-xl">

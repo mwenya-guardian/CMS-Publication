@@ -116,6 +116,32 @@ export const newsletterService = {
       subscriber
     );
     return response.data.data;
+  },
+
+  // Count methods for dashboard
+  async getTotalCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`${BASE}/count`);
+    return response.data.data;
+  },
+
+  async getCountByYear(year: number): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`${BASE}/count/year/${year}`);
+    return response.data.data;
+  },
+
+  async getActiveCount(): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`${BASE}/count/active`);
+    return response.data.data;
+  },
+
+  async getActiveCountByYear(year: number): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`${BASE}/count/active/year/${year}`);
+    return response.data.data;
+  },
+
+  async getInactiveCountByYear(year: number): Promise<number> {
+    const response = await api.get<ApiResponse<number>>(`${BASE}/count/inactive/year/${year}`);
+    return response.data.data;
   }
 };
 

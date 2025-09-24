@@ -58,7 +58,7 @@ const Contacts: React.FC = () => {
             <Users className="w-6 h-6 mr-2 text-blue-600" />
             Pastoral
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pastoral.map((contact) => (
             <div key={contact.id} className="bg-gray-50 rounded-lg p-4">
               <div className="mb-3">
@@ -93,7 +93,7 @@ const Contacts: React.FC = () => {
             <Users className="w-6 h-6 mr-2 text-blue-600" />
             Departments
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {departmental.map((contact) => (
             <div key={contact.id} className="bg-gray-50 rounded-lg p-4">
               <div className="mb-3">
@@ -128,7 +128,7 @@ const Contacts: React.FC = () => {
             <Users className="w-6 h-6 mr-2 text-blue-600" />
             Elders
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {elders.map((contact) => (
             <div key={contact.id} className="bg-gray-50 rounded-lg p-4">
               <div className="mb-3">
@@ -169,7 +169,7 @@ const Contacts: React.FC = () => {
             Need prayer? Our prayer team is available to pray with you and for you. 
             Don't hesitate to reach out during times of need, celebration, or when you simply need spiritual support.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="flex items-center bg-white rounded-lg p-4">
                 <Phone className="w-5 h-5 mr-3 text-red-600" />
                 <a 
@@ -192,8 +192,8 @@ const Contacts: React.FC = () => {
         </div>
       </div>
 
-      {/* Emergency Contacts */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+      {/* Church Details */}
+      <div className="bg-gradient-to-b from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-6">
         <h2 className="text-xl font-bold text-yellow-800 mb-4">{churchDetails?.name}</h2>
         <p className="text-yellow-700 mb-4">
           P.O.Box {churchDetails?.poBox},  {churchDetails?.address}, {churchDetails?.city}, {churchDetails?.province}, {churchDetails?.country}.
@@ -229,7 +229,7 @@ const Contacts: React.FC = () => {
       </div>
 
       {/* Newsletter Signup */}
-      <div className="bg-gradient-to-r from-primary-700 to-primary-400 text-white rounded-lg p-6">
+      <div className="bg-gradient-to-t from-primary-700 to-primary-400 text-white rounded-lg p-6">
         <h2 className="text-2xl font-bold mb-4">Stay Connected</h2>
         <p className="text-blue-100 mb-6">
           Subscribe to our newsletter to receive updates about events, announcements, and church news.

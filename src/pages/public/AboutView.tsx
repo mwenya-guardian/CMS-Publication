@@ -6,7 +6,7 @@ import Giving from '../../components/about/Giving';
 import Contacts from '../../components/about/Contacts';
 
 export const AboutView: React.FC = () => {
-  const [activeSection, setActiveSection] = useState('giving');
+  const [activeSection, setActiveSection] = useState('contacts');
   const renderSection = () => {
     switch (activeSection) {
       case 'giving':
@@ -14,7 +14,7 @@ export const AboutView: React.FC = () => {
       case 'contacts':
         return <Contacts />;
       default:
-        return <Giving />;
+        return <Contacts />;
     }
   };
   return (
