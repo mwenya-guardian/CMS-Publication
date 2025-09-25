@@ -1,15 +1,7 @@
 // src/services/userService.ts
 import api from './api';
-import { User, UserRequest, UpdateUserRequest } from '../types/User';
+import { User, UserRequest, UpdateUserRequest, UserRegistrationRequest} from '../types/User';
 import { ApiResponse, PaginatedResponse, FilterOptions } from '../types/Common';
-
-export interface UserRegistrationRequest {
-  email: string;
-  firstname: string;
-  lastname: string;
-  password: string;
-  dob?: string;
-}
 
 
 export const userService = {

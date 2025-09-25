@@ -13,7 +13,13 @@ export interface User {
   createdBy?: string;
   updatedBy?: string;
 }
-
+export interface UserRegistrationRequest {
+  email: string;
+  firstname: string;
+  lastname: string;
+  password: string;
+  dob?: string;
+}
 export interface LoginRequest {
   email: string;
   password: string;
