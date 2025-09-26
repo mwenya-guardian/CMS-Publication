@@ -15,6 +15,56 @@ export const eventService = {
     return response.data.data;
   },
 
+  // Get all liked events for current user
+  async getAllLikedPaginated(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Event>> {
+    try {
+      // Get all liked events (we'll handle pagination on frontend)
+      const reactionResponse = await api.get<ApiResponse<any[]>>(`/reactions/EVENT/LIKE/me`);
+      const reactions = reactionResponse.data.data || [];
+      
+      if (reactions.length === 0) {
+        return { 
+          data: [], 
+          pagination: { page: 1, limit, total: 0, totalPages: 0 }
+        };
+      }
+      
+      // Get individual events by their IDs
+      const eventPromises = reactions.map(async (reaction: any) => {
+        try {
+          const eventResponse = await api.get<ApiResponse<Event>>(`/events/${reaction.targetId}`);
+          return eventResponse.data.data;
+        } catch (error) {
+          console.error(`Failed to get event ${reaction.targetId}:`, error);
+          return null;
+        }
+      });
+      
+      const events = (await Promise.all(eventPromises)).filter(Boolean) as Event[];
+      
+      // Simple pagination on the frontend
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedEvents = events.slice(startIndex, endIndex);
+      
+      return {
+        data: paginatedEvents,
+        pagination: {
+          page,
+          limit,
+          total: events.length,
+          totalPages: Math.ceil(events.length / limit)
+        }
+      };
+    } catch (error) {
+      console.error('Failed to get liked events:', error);
+      return { 
+        data: [], 
+        pagination: { page: 1, limit, total: 0, totalPages: 0 }
+      };
+    }
+  },
+
   async getById(id: string): Promise<Event> {
     const response = await api.get<ApiResponse<Event>>(`/events/${id}`);
     return response.data.data;

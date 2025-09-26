@@ -22,6 +22,11 @@ export const userService = {
     const response = await api.get<ApiResponse<User>>(`/users/${id}`);
     return response.data.data;
   },
+
+  async getFullName(id: string): Promise<string> {
+    const response = await api.get<ApiResponse<string>>(`/users/${id}/fullname`);
+    return response.data.data;
+  },
   async verifyUser(email:string, token:string): Promise<ApiResponse<boolean>> {
     const response = await api.put<ApiResponse<boolean>>(`/users/verify?token=${token}&&email=${email}`);
       return response.data;

@@ -15,6 +15,56 @@ export const quoteService = {
     return response.data.data;
   },
 
+  // Get all liked quotes for current user
+  async getAllLikedPaginated(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Quote>> {
+    try {
+      // Get all liked quotes (we'll handle pagination on frontend)
+      const reactionResponse = await api.get<ApiResponse<any[]>>(`/reactions/QUOTE/LIKE/me`);
+      const reactions = reactionResponse.data.data || [];
+      
+      if (reactions.length === 0) {
+        return { 
+          data: [], 
+          pagination: { page: 1, limit, total: 0, totalPages: 0 }
+        };
+      }
+      
+      // Get individual quotes by their IDs
+      const quotePromises = reactions.map(async (reaction: any) => {
+        try {
+          const quoteResponse = await api.get<ApiResponse<Quote>>(`/quotes/${reaction.targetId}`);
+          return quoteResponse.data.data;
+        } catch (error) {
+          console.error(`Failed to get quote ${reaction.targetId}:`, error);
+          return null;
+        }
+      });
+      
+      const quotes = (await Promise.all(quotePromises)).filter(Boolean) as Quote[];
+      
+      // Simple pagination on the frontend
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedQuotes = quotes.slice(startIndex, endIndex);
+      
+      return {
+        data: paginatedQuotes,
+        pagination: {
+          page,
+          limit,
+          total: quotes.length,
+          totalPages: Math.ceil(quotes.length / limit)
+        }
+      };
+    } catch (error) {
+      console.error('Failed to get liked quotes:', error);
+      return { 
+        data: [], 
+        pagination: { page: 1, limit, total: 0, totalPages: 0 }
+      };
+    }
+  },
+
   async getById(id: string): Promise<Quote> {
     const response = await api.get<ApiResponse<Quote>>(`/quotes/${id}`);
     return response.data.data;
