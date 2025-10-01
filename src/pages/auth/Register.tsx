@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { verificationService } from '../../services/verificationService';
-import { userService, UserRegistrationRequest } from '../../services/userService';
+import { userService } from '../../services/userService';
+import { UserRegistrationRequest } from '../../types/User';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Modal } from '../../components/common/Modal';
-import { Mail, User, Lock, Calendar, CheckCircle, X } from 'lucide-react';
+import { Mail, User, Lock, Calendar, CheckCircle, X, ArrowLeft } from 'lucide-react';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -159,7 +160,7 @@ export const Register: React.FC = () => {
         <p className="mt-2 text-center text-sm text-gray-600">
           Already have an account?{' '}
           <Link to="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-            Sign in here
+            Sign In
           </Link>
         </p>
       </div>
@@ -257,6 +258,15 @@ export const Register: React.FC = () => {
               )}
             </Button>
           </form>
+          <div className='mt-5 flex items-center justify-center'>
+              <Link
+                to="/"
+                className="flex items-center text-sm text-primary-600 hover:text-primary-500 transition-colors duration-200"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back to public site
+              </Link>
+            </div>
         </div>
       </div>
 

@@ -143,7 +143,7 @@ export const Login: React.FC = () => {
             <div className="mt-4 bg-gray-50 rounded-md p-4">
               {/* <p className="text-xs text-gray-600 mb-2">For demo purposes, use:</p> */}
               <div className="space-y-1 text-xs">
-                <p><strong>Email:</strong> admin@example.com</p>
+                <p><strong>Email:</strong> user@example.com</p>
                 <p><strong>Password:</strong> password</p>
               </div>
             </div>
