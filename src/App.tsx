@@ -25,6 +25,7 @@ import { UsersPage } from './pages/admin/UserPage';
 import { ChurchDetailsPage } from './pages/admin/ChurchDetailsPage';
 import { NewsletterSchedulesPage } from './pages/admin/NewsletterSchedulesPage';
 import { PostsPage as AdminPostsPage } from './pages/admin/PostsPage';
+import { AnalysisPage } from './pages/admin/AnalysisPage';
 
 // User Pages
 import { UserLayout } from './components/layout/UserLayout';
@@ -113,6 +114,11 @@ function App() {
             <Route path="church-details" element={
               <ProtectedAdminRoutes>
                 <ChurchDetailsPage />
+              </ProtectedAdminRoutes>
+            }/>
+            <Route path="analysis" element={
+              <ProtectedAdminRoutes>
+                <AnalysisPage />
               </ProtectedAdminRoutes>
             }/>
           </Route>

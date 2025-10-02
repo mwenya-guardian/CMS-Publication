@@ -14,11 +14,11 @@ import {
   HandHeart,
   UserCog,
   Church,
-  Clock,
   AudioLines,
   Rss,
   AlarmClockCheck,
-  Repeat2
+  Repeat2,
+  Brain
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
@@ -55,6 +55,7 @@ export const AdminLayout: React.FC = () => {
         { name: 'Members', href: '/admin/members', icon: User },
         { name: 'Users', href: '/admin/users', icon: UserCog },
         { name: 'Giving', href: '/admin/giving', icon: HandHeart },
+        { name: 'AI Analysis', href: '/admin/analysis', icon: Brain },
         // { name: 'Settings', href: '/admin/settings', icon: Settings },
         { name: 'Church', href: '/admin/church-details', icon: Church },];
     }

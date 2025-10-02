@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Calendar, Quote, TrendingUp, Newspaper, Users } from 'lucide-react';
+import { FileText, Calendar, Quote, TrendingUp, Newspaper, Users, AlertTriangle, Brain } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { publicationService } from '../../services/publicationService';
 import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
@@ -7,6 +8,8 @@ import { bulletinService } from '../../services/bulletinService';
 import { newsletterService } from '../../services/newsletterService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { dateUtils } from '../../utils/dateUtils';
+import { analysisService } from '../../services/analysisService';
+import { AnalysisStats } from '../../types/Analysis';
 
 interface StatsData {
   publications: {
@@ -50,7 +53,9 @@ interface StatsData {
 }
 
 export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<StatsData | null>(null);
+  const [analysisStats, setAnalysisStats] = useState<AnalysisStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
@@ -177,6 +182,15 @@ export const Dashboard: React.FC = () => {
           yearlyData,
           newsletterYearlyData,
         });
+
+        // Load analysis stats
+        try {
+          const analysisData = await analysisService.getAnalysisStats();
+          setAnalysisStats(analysisData);
+        } catch (analysisError) {
+          console.error('Failed to load analysis stats:', analysisError);
+          // Don't fail the whole dashboard if analysis fails
+        }
       } catch (err) {
         setError('Failed to load dashboard data');
         console.error('Dashboard error:', err);
@@ -276,6 +290,86 @@ export const Dashboard: React.FC = () => {
           color="bg-purple-600"
         />
       </div>
+
+      {/* AI Analysis Summary */}
+      {analysisStats && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">AI Analysis Summary</h2>
+            <button
+              onClick={() => navigate('/admin/analysis')}
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              View Details →
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">{analysisStats.totalAnalyzed}</div>
+              <div className="text-sm text-gray-600">Comments Analyzed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{analysisStats.flaggedComments}</div>
+              <div className="text-sm text-gray-600">Flagged Comments</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{analysisStats.recentAlerts.length}</div>
+              <div className="text-sm text-gray-600">Recent Alerts</div>
+            </div>
+          </div>
+
+          {/* Flagged Comments Alert */}
+          {analysisStats.flaggedComments > 0 && (
+            <div 
+              className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg cursor-pointer hover:bg-red-100 transition-colors"
+              onClick={() => navigate('/admin/analysis?tab=flagged')}
+            >
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+                <div>
+                  <h4 className="font-medium text-red-900">
+                    {analysisStats.flaggedComments} comments require attention
+                  </h4>
+                  <p className="text-sm text-red-700">
+                    Comments flagged for potential moderation issues
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Brain className="h-5 w-5 text-red-600" />
+                <span className="text-sm text-red-600 font-medium">Review →</span>
+              </div>
+            </div>
+          )}
+
+          {/* Recent Alerts */}
+          {analysisStats.recentAlerts.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-medium text-gray-900 mb-2">Recent Alerts</h4>
+              <div className="space-y-2">
+                {analysisStats.recentAlerts.slice(0, 3).map((alert) => (
+                  <div 
+                    key={alert.id}
+                    className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors"
+                    onClick={() => navigate('/admin/analysis?tab=alerts')}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className={`h-4 w-4 ${alert.severity === 'CRITICAL' ? 'text-red-600' : 'text-orange-600'}`} />
+                      <span className="text-sm text-gray-900">{alert.note}</span>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+                    }`}>
+                      {alert.severity}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Content by Year */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

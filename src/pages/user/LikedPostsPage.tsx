@@ -13,7 +13,7 @@ import { eventService } from '../../services/eventService';
 import { quoteService } from '../../services/quoteService';
 import { publicationService } from '../../services/publicationService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { RefreshCw, Calendar, Quote as QuoteIcon, Rss, AudioLines } from 'lucide-react';
+import { RefreshCcwDot, Calendar, Quote as QuoteIcon, Rss, AudioLines } from 'lucide-react';
 
 export const LikedPostsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -356,9 +356,9 @@ useEffect(() => {
                   <p className="text-gray-500 mb-3">No more liked content available</p>
                   <button
                     onClick={handleRefresh}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                    className="inline-flex items-center px-4 py-2 text-blue-400 text-sm font-medium rounded-lg hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
                   >
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCcwDot className="h-6 w-6 mr-2" />
                     Refresh
                   </button>
                 </div>
