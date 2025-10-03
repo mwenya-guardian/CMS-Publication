@@ -38,7 +38,7 @@ export const OnDutyModal: React.FC<OnDutyModalProps> = ({
       });
     }
     setParticipantInput('');
-  }, [onDuty]);
+  }, [onDuty, isOpen]);
 
   const handleAddParticipant = () => {
     if (participantInput.trim()) {

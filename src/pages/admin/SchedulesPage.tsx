@@ -1,0 +1,918 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { newsletterScheduleService } from '../../services/newsletterScheduleService';
+import { analysisScheduleService } from '../../services/analysisScheduleService';
+import { bulletinService } from '../../services/bulletinService';
+import { NewsletterSchedule, NewsletterScheduleCreate } from '../../types/NewsletterSchedule';
+import { AnalysisSchedule } from '../../types/Analysis';
+import { Button } from '../../components/common/Button';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { Modal } from '../../components/common/Modal';
+import { Play, Pencil, Trash2, Brain, Mail } from 'lucide-react';
+
+export const SchedulesPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'newsletter' | 'analysis'>('newsletter');
+  
+  // Newsletter schedules state
+  const [schedules, setSchedules] = useState<NewsletterSchedule[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [bulletins, setBulletins] = useState<{ id: string; title: string }[]>([]);
+  
+  // AI Analysis schedules state
+  const [analysisSchedules, setAnalysisSchedules] = useState<AnalysisSchedule[]>([]);
+  const [analysisLoading, setAnalysisLoading] = useState<boolean>(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  // Newsletter modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editing, setEditing] = useState<NewsletterSchedule | null>(null);
+  const [form, setForm] = useState<NewsletterScheduleCreate>({
+    title: '',
+    description: '',
+    cronExpression: '',
+    zoneId: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    bulletinIds: [],
+    sendToAll: true,
+    subscriberIds: [],
+    enabled: true,
+  });
+
+  // AI Analysis modal state
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [editingAnalysis, setEditingAnalysis] = useState<AnalysisSchedule | null>(null);
+  const [analysisForm, setAnalysisForm] = useState<Omit<AnalysisSchedule, 'id' | 'createdAt' | 'updatedAt' | 'lastRunAt'>>({
+    title: '',
+    cronExpression: '',
+    zoneId: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    modelType: 'POST',
+    enabled: true,
+    description: '',
+  });
+
+  // Newsletter builder state
+  const [useAdvancedCron, setUseAdvancedCron] = useState<boolean>(false);
+  const [scheduleType, setScheduleType] = useState<'once' | 'daily' | 'weekly' | 'monthly'>('weekly');
+  const [dateOnce, setDateOnce] = useState<string>(''); // yyyy-mm-dd
+  const [timeStr, setTimeStr] = useState<string>('09:00'); // HH:mm
+  const [weeklyDays, setWeeklyDays] = useState<string[]>(['SUN']);
+  const [monthlyDay, setMonthlyDay] = useState<number>(1);
+
+  // AI Analysis builder state
+  const [useAnalysisAdvancedCron, setUseAnalysisAdvancedCron] = useState<boolean>(false);
+  const [analysisScheduleType, setAnalysisScheduleType] = useState<'once' | 'daily' | 'weekly' | 'monthly'>('weekly');
+  const [analysisDateOnce, setAnalysisDateOnce] = useState<string>(''); // yyyy-mm-dd
+  const [analysisTimeStr, setAnalysisTimeStr] = useState<string>('09:00'); // HH:mm
+  const [analysisWeeklyDays, setAnalysisWeeklyDays] = useState<string[]>(['SUN']);
+  const [analysisMonthlyDay, setAnalysisMonthlyDay] = useState<number>(1);
+
+  const loadNewsletterSchedules = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [schedulesData, bulletinsData] = await Promise.all([
+        newsletterScheduleService.getAll(),
+        bulletinService.getPublishedSummaries()
+      ]);
+      setSchedules(schedulesData);
+      setBulletins(bulletinsData);
+    } catch (e) {
+      console.error(e);
+      setError('Failed to load newsletter schedules');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAnalysisSchedules = async () => {
+    try {
+      setAnalysisLoading(true);
+      setAnalysisError(null);
+      const schedulesData = await analysisScheduleService.getAll();
+      setAnalysisSchedules(schedulesData);
+    } catch (e) {
+      console.error(e);
+      setAnalysisError('Failed to load analysis schedules');
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  const load = async () => {
+    if (activeTab === 'newsletter') {
+      await loadNewsletterSchedules();
+    } else {
+      await loadAnalysisSchedules();
+    }
+  };
+
+  useEffect(() => { load(); }, [activeTab]);
+
+  const resetBuilder = () => {
+    setUseAdvancedCron(false);
+    setScheduleType('weekly');
+    setDateOnce('');
+    setTimeStr('09:00');
+    setWeeklyDays(['SUN']);
+    setMonthlyDay(1);
+  };
+
+  const resetAnalysisBuilder = () => {
+    setUseAnalysisAdvancedCron(false);
+    setAnalysisScheduleType('weekly');
+    setAnalysisDateOnce('');
+    setAnalysisTimeStr('09:00');
+    setAnalysisWeeklyDays(['SUN']);
+    setAnalysisMonthlyDay(1);
+  };
+
+  const resetForm = () => {
+    setEditing(null);
+    setForm({
+      title: '',
+      description: '',
+      cronExpression: '',
+      zoneId: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      bulletinIds: [],
+      sendToAll: true,
+      subscriberIds: [],
+      enabled: true,
+    });
+    resetBuilder();
+  };
+
+  const resetAnalysisForm = () => {
+    setEditingAnalysis(null);
+    setAnalysisForm({
+      title: '',
+      cronExpression: '',
+      zoneId: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      modelType: 'POST',
+      enabled: true,
+      description: '',
+    });
+    resetAnalysisBuilder();
+  };
+
+  const openCreate = () => { 
+    resetForm(); 
+    setError(null);
+    setIsModalOpen(true); 
+  };
+  const openEdit = (s: NewsletterSchedule) => {
+    setEditing(s);
+    setForm({
+      title: s.title,
+      description: s.description || '',
+      cronExpression: s.cronExpression,
+      zoneId: s.zoneId,
+      bulletinIds: s.bulletinIds || [],
+      sendToAll: s.sendToAll,
+      subscriberIds: s.subscriberIds || [],
+      enabled: s.enabled,
+    });
+    // Try to keep advanced for existing cron, user can switch to builder manually
+    setUseAdvancedCron(true);
+    setError(null);
+    setIsModalOpen(true);
+  };
+
+  const openAnalysisCreate = () => { 
+    resetAnalysisForm(); 
+    setAnalysisError(null);
+    setIsAnalysisModalOpen(true); 
+  };
+  const openAnalysisEdit = (s: AnalysisSchedule) => {
+    setEditingAnalysis(s);
+    setAnalysisForm({
+      title: s.title,
+      cronExpression: s.cronExpression,
+      zoneId: s.zoneId,
+      modelType: s.modelType,
+      enabled: s.enabled,
+      description: s.description || '',
+    });
+    // Try to keep advanced for existing cron, user can switch to builder manually
+    setUseAnalysisAdvancedCron(true);
+    setAnalysisError(null);
+    setIsAnalysisModalOpen(true);
+  };
+
+  const parseTime = (hhmm: string) => {
+    const [h, m] = hhmm.split(':').map((v) => parseInt(v || '0', 10));
+    return { hour: isNaN(h) ? 0 : h, minute: isNaN(m) ? 0 : m };
+  };
+
+  // Build Quartz cron expression (sec min hour day-of-month month day-of-week year?)
+  const buildCron = () => {
+    const { hour, minute } = parseTime(timeStr || '00:00');
+    const sec = 0;
+    if (scheduleType === 'daily') {
+      return `${sec} ${minute} ${hour} * * ?`;
+    }
+    if (scheduleType === 'weekly') {
+      const days = weeklyDays.length > 0 ? weeklyDays.join(',') : 'SUN';
+      return `${sec} ${minute} ${hour} ? * ${days}`;
+    }
+    if (scheduleType === 'monthly') {
+      const dom = Math.min(Math.max(monthlyDay || 1, 1), 31);
+      return `${sec} ${minute} ${hour} ${dom} * ?`;
+    }
+    // once
+    if (dateOnce) {
+      const d = new Date(dateOnce + 'T00:00:00');
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1; // 1-12
+      const day = d.getDate();
+      return `${sec} ${minute} ${hour} ${day} ${month} ? ${year}`;
+    }
+    // fallback: weekly Sunday 9AM
+    return `0 0 9 ? * SUN`;
+  };
+
+  const buildAnalysisCron = () => {
+    const { hour, minute } = parseTime(analysisTimeStr || '00:00');
+    const sec = 0;
+    if (analysisScheduleType === 'daily') {
+      return `${sec} ${minute} ${hour} * * ?`;
+    }
+    if (analysisScheduleType === 'weekly') {
+      const days = analysisWeeklyDays.length > 0 ? analysisWeeklyDays.join(',') : 'SUN';
+      return `${sec} ${minute} ${hour} ? * ${days}`;
+    }
+    if (analysisScheduleType === 'monthly') {
+      const dom = Math.min(Math.max(analysisMonthlyDay || 1, 1), 31);
+      return `${sec} ${minute} ${hour} ${dom} * ?`;
+    }
+    // once
+    if (analysisDateOnce) {
+      const d = new Date(analysisDateOnce + 'T00:00:00');
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1; // 1-12
+      const day = d.getDate();
+      return `${sec} ${minute} ${hour} ${day} ${month} ? ${year}`;
+    }
+    // fallback: weekly Sunday 9AM
+    return `0 0 9 ? * SUN`;
+  };
+
+  const cronPreview = useMemo(() => (useAdvancedCron ? form.cronExpression : buildCron()), [useAdvancedCron, form.cronExpression, scheduleType, dateOnce, timeStr, weeklyDays, monthlyDay]);
+  const analysisCronPreview = useMemo(() => (useAnalysisAdvancedCron ? analysisForm.cronExpression : buildAnalysisCron()), [useAnalysisAdvancedCron, analysisForm.cronExpression, analysisScheduleType, analysisDateOnce, analysisTimeStr, analysisWeeklyDays, analysisMonthlyDay]);
+
+  const save = async () => {
+    try {
+      const payload = { ...form } as NewsletterScheduleCreate;
+      if (!useAdvancedCron) {
+        payload.cronExpression = buildCron();
+      }
+      if (!payload.cronExpression) {
+        setError('Cron expression is required');
+        return;
+      }
+      if (editing) {
+        await newsletterScheduleService.update(editing.id, payload);
+      } else {
+        await newsletterScheduleService.create(payload);
+      }
+      setIsModalOpen(false);
+      setEditing(null);
+      await load();
+    } catch (e) {
+      console.error(e);
+      setError('Failed to save schedule');
+    }
+  };
+
+  const saveAnalysis = async () => {
+    try {
+      const payload = { ...analysisForm };
+      if (!useAnalysisAdvancedCron) {
+        payload.cronExpression = buildAnalysisCron();
+      }
+      if (!payload.cronExpression) {
+        setAnalysisError('Cron expression is required');
+        return;
+      }
+      if (editingAnalysis) {
+        await analysisScheduleService.update(editingAnalysis.id, payload);
+      } else {
+        await analysisScheduleService.create(payload);
+      }
+      setIsAnalysisModalOpen(false);
+      setEditingAnalysis(null);
+      await load();
+    } catch (e) {
+      console.error(e);
+      setAnalysisError('Failed to save analysis schedule');
+    }
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm('Delete this schedule?')) return;
+    try {
+      await newsletterScheduleService.delete(id);
+      await load();
+    } catch (e) {
+      console.error(e);
+      setError('Failed to delete schedule');
+    }
+  };
+
+  const removeAnalysis = async (id: string) => {
+    if (!confirm('Delete this analysis schedule?')) return;
+    try {
+      await analysisScheduleService.delete(id);
+      await load();
+    } catch (e) {
+      console.error(e);
+      setAnalysisError('Failed to delete analysis schedule');
+    }
+  };
+
+  const runNow = async (id: string) => {
+    try {
+      await newsletterScheduleService.runNow(id);
+    } catch (e) {
+      console.error(e);
+      setError('Failed to trigger schedule');
+    }
+  };
+
+  const runAnalysisNow = async (id: string) => {
+    try {
+      await analysisScheduleService.runNow(id);
+    } catch (e) {
+      console.error(e);
+      setAnalysisError('Failed to trigger analysis schedule');
+    }
+  };
+
+  const toggleAnalysisEnabled = async (id: string, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await analysisScheduleService.enable(id);
+      } else {
+        await analysisScheduleService.disable(id);
+      }
+      await load();
+    } catch (e) {
+      console.error(e);
+      setAnalysisError('Failed to toggle analysis schedule');
+    }
+  };
+
+  const timeFormatter = useMemo(() => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }), []);
+
+  const toggleWeeklyDay = (day: string) => {
+    setWeeklyDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
+  };
+
+  const toggleAnalysisWeeklyDay = (day: string) => {
+    setAnalysisWeeklyDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
+  };
+
+  const WEEK_DAYS = [
+    { key: 'SUN', label: 'Sun' },
+    { key: 'MON', label: 'Mon' },
+    { key: 'TUE', label: 'Tue' },
+    { key: 'WED', label: 'Wed' },
+    { key: 'THU', label: 'Thu' },
+    { key: 'FRI', label: 'Fri' },
+    { key: 'SAT', label: 'Sat' },
+  ];
+
+  const MODEL_TYPES = [
+    { key: 'POST', label: 'Posts' },
+    { key: 'EVENT', label: 'Events' },
+    { key: 'QUOTE', label: 'Quotes' },
+    { key: 'PUBLICATION', label: 'Publications' },
+  ];
+
+  if (loading || analysisLoading) {
+    return (
+      <div className="flex justify-center items-center h-64"><LoadingSpinner /></div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Schedules</h1>
+          <p className="text-gray-600 mt-2">Manage newsletter and AI analysis schedules</p>
+        </div>
+        <Button 
+          variant="primary" 
+          icon={activeTab === 'newsletter' ? Mail : Brain} 
+          onClick={activeTab === 'newsletter' ? openCreate : openAnalysisCreate}
+          className="w-full sm:w-auto"
+        >
+          <span className="hidden sm:inline">New {activeTab === 'newsletter' ? 'Newsletter' : 'Analysis'} Schedule</span>
+          <span className="sm:hidden">New Schedule</span>
+        </Button>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('newsletter')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+              activeTab === 'newsletter'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <Mail className="inline w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Newsletter Schedules</span>
+            <span className="sm:hidden">Newsletter</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('analysis')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+              activeTab === 'analysis'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <Brain className="inline w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">AI Analysis Schedules</span>
+            <span className="sm:hidden">Analysis</span>
+          </button>
+        </nav>
+      </div>
+
+      {(error || analysisError) && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+          {error || analysisError}
+        </div>
+      )}
+
+      {/* Newsletter Schedules Tab */}
+      {activeTab === 'newsletter' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                  <th className="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cron</th>
+                  <th className="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Run</th>
+                  <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {schedules.map((s) => (
+                  <tr key={s.id} className="hover:bg-gray-50">
+                    <td className="px-3 sm:px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">{s.title}</div>
+                      <div className="text-sm text-gray-500 truncate max-w-xs">{s.description?.slice(0, 15)}...</div>
+                      <div className="sm:hidden mt-1">
+                        <div className="text-xs text-gray-500 font-mono">{s.cronExpression}</div>
+                        <div className="text-xs text-gray-500">{s.zoneId}</div>
+                      </div>
+                    </td>
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-4">
+                      <div className="text-xs text-gray-900 font-mono">{s.cronExpression}</div>
+                    </td>
+                    <td className="hidden md:table-cell px-3 sm:px-6 py-4">
+                      <div className="text-sm text-gray-900">{s.zoneId}</div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-4">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${s.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {s.enabled ? 'Enabled' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td className="hidden lg:table-cell px-3 sm:px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {s.lastRunAt ? timeFormatter.format(new Date(s.lastRunAt)) : '—'}
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-4">
+                      <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          icon={Play} 
+                          onClick={() => runNow(s.id)}
+                          className="text-xs px-2 py-1"
+                        >
+                          <span className="hidden sm:inline">Run</span>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          icon={Pencil} 
+                          onClick={() => openEdit(s)}
+                          className="text-xs px-2 py-1"
+                        >
+                          <span className="hidden sm:inline">Edit</span>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          icon={Trash2} 
+                          className="text-red-600 text-xs px-2 py-1" 
+                          onClick={() => remove(s.id)}
+                        >
+                          <span className="hidden sm:inline">Delete</span>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'newsletter' && isModalOpen && (
+        <Modal isOpen={isModalOpen} onClose={() => {
+          setIsModalOpen(false);
+          setEditing(null);
+          setError(null);
+        }} title={editing ? 'Edit Schedule' : 'New Schedule'}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Title</label>
+              <input className="mt-1 w-full px-3 py-2 border rounded-md" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea className="mt-1 w-full px-3 py-2 border rounded-md" 
+                  maxLength={100} placeholder="Enter your text here (max 100 characters)"
+                  value={form.description} 
+                  onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+
+            {/* Builder vs Advanced toggle */}
+            <div className="flex items-center justify-between bg-gray-50 border rounded-md p-3">
+              <div className="text-sm text-gray-700">Scheduling Mode</div>
+              <div className="flex items-center space-x-3">
+                <label className="inline-flex items-center text-sm">
+                  <input type="radio" name="mode" className="mr-2" checked={!useAdvancedCron} onChange={() => setUseAdvancedCron(false)} />
+                  Builder
+                </label>
+                <label className="inline-flex items-center text-sm">
+                  <input type="radio" name="mode" className="mr-2" checked={useAdvancedCron} onChange={() => setUseAdvancedCron(true)} />
+                  Advanced
+                </label>
+              </div>
+            </div>
+
+            {!useAdvancedCron ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Frequency</label>
+                    <select className="mt-1 w-full px-3 py-2 border rounded-md" value={scheduleType} onChange={(e) => setScheduleType(e.target.value as any)}>
+                      <option value="once">Once</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Time</label>
+                    <input type="time" className="mt-1 w-full px-3 py-2 border rounded-md" value={timeStr} onChange={(e) => setTimeStr(e.target.value)} />
+                  </div>
+                </div>
+
+                {scheduleType === 'once' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <input type="date" className="mt-1 w-full px-3 py-2 border rounded-md" value={dateOnce} onChange={(e) => setDateOnce(e.target.value)} />
+                    <p className="text-xs text-gray-500 mt-1">Runs one time at the selected date and time.</p>
+                  </div>
+                )}
+
+                {scheduleType === 'weekly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Days of Week</label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {WEEK_DAYS.map(d => (
+                        <button key={d.key} type="button" className={`px-3 py-1 rounded-md border text-sm ${weeklyDays.includes(d.key) ? 'bg-primary-100 border-primary-300 text-primary-700' : 'bg-white border-gray-300 text-gray-700'}`} onClick={() => toggleWeeklyDay(d.key)}>
+                          {d.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Select one or more days.</p>
+                  </div>
+                )}
+
+                {scheduleType === 'monthly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Day of Month</label>
+                    <input type="number" min={1} max={31} className="mt-1 w-full px-3 py-2 border rounded-md" value={monthlyDay} onChange={(e) => setMonthlyDay(parseInt(e.target.value || '1', 10))} />
+                  </div>
+                )}
+
+                <div className="bg-gray-50 border rounded-md p-3 text-sm">
+                  <div className="text-gray-700">Cron Preview</div>
+                  <div className="mt-1 font-mono text-gray-900">{cronPreview}</div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Cron Expression</label>
+                  <input maxLength={100} placeholder="0 0 9 ? * SUN" className="mt-1 w-full px-3 py-2 border rounded-md" value={form.cronExpression} onChange={(e) => setForm({ ...form, cronExpression: e.target.value })} />
+                  <p className="mt-1 text-xs text-gray-500">Quartz cron format. Example: 0 0 9 ? * SUN (Sundays 9AM)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Time Zone</label>
+                  <input className="mt-1 w-full px-3 py-2 border rounded-md" value={form.zoneId} onChange={(e) => setForm({ ...form, zoneId: e.target.value })} />
+                </div>
+              </div>
+            )}
+
+            {/* Common fields continued */}
+            {useAdvancedCron === false && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Time Zone</label>
+                <input className="mt-1 w-full px-3 py-2 border rounded-md" value={form.zoneId} onChange={(e) => setForm({ ...form, zoneId: e.target.value })} />
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Select Bulletins</label>
+                <select 
+                  multiple 
+                  className="mt-1 w-full px-3 py-2 border rounded-md h-32"
+                  value={form.bulletinIds}
+                  onChange={(e) => {
+                    const selectedIds = Array.from(e.target.selectedOptions, option => option.value);
+                    setForm({ ...form, bulletinIds: selectedIds });
+                  }}
+                >
+                  {bulletins.map((bulletin) => (
+                    <option key={bulletin.id} value={bulletin.id}>
+                      {bulletin.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple bulletins</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Send To All Subscribers</label>
+                <input type="checkbox" className="ml-2" checked={form.sendToAll} onChange={(e) => setForm({ ...form, sendToAll: e.target.checked })} />
+              </div>
+            </div>
+            {!form.sendToAll && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Subscriber IDs (comma-separated)</label>
+                <input className="mt-1 w-full px-3 py-2 border rounded-md" value={form.subscriberIds?.join(',') || ''} onChange={(e) => setForm({ ...form, subscriberIds: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })} />
+              </div>
+            )}
+            <div>
+              <label className="inline-flex items-center text-sm font-medium text-gray-700">
+                <input type="checkbox" className="mr-2" checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} />
+                Enabled
+              </label>
+            </div>
+            <div className="pt-2 flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => {
+                setIsModalOpen(false);
+                setEditing(null);
+                setError(null);
+              }}>Cancel</Button>
+              <Button variant="primary" onClick={save}>{editing ? 'Update' : 'Create'}</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* AI Analysis Schedules Tab */}
+      {activeTab === 'analysis' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                  <th className="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cron</th>
+                  <th className="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Run</th>
+                  <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {analysisSchedules.map((s) => (
+                  <tr key={s.id} className="hover:bg-gray-50">
+                    <td className="px-3 sm:px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">{s.title}</div>
+                      <div className="text-sm text-gray-500 truncate max-w-xs">{s.description?.slice(0, 15)}...</div>
+                      <div className="mt-1">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {MODEL_TYPES.find(m => m.key === s.modelType)?.label || s.modelType}
+                        </span>
+                      </div>
+                      <div className="sm:hidden mt-1">
+                        <div className="text-xs text-gray-500 font-mono">{s.cronExpression}</div>
+                        <div className="text-xs text-gray-500">{s.zoneId}</div>
+                      </div>
+                    </td>
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-4">
+                      <div className="text-xs text-gray-900 font-mono">{s.cronExpression}</div>
+                    </td>
+                    <td className="hidden md:table-cell px-3 sm:px-6 py-4">
+                      <div className="text-sm text-gray-900">{s.zoneId}</div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-4">
+                      <button
+                        onClick={() => toggleAnalysisEnabled(s.id, !s.enabled)}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer transition-colors ${
+                          s.enabled ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                        }`}
+                      >
+                        {s.enabled ? 'Enabled' : 'Disabled'}
+                      </button>
+                    </td>
+                    <td className="hidden lg:table-cell px-3 sm:px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {s.lastRunAt ? timeFormatter.format(new Date(s.lastRunAt)) : '—'}
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-4">
+                      <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          icon={Play} 
+                          onClick={() => runAnalysisNow(s.id)}
+                          className="text-xs px-2 py-1"
+                        >
+                          <span className="hidden sm:inline">Run</span>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          icon={Pencil} 
+                          onClick={() => openAnalysisEdit(s)}
+                          className="text-xs px-2 py-1"
+                        >
+                          <span className="hidden sm:inline">Edit</span>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          icon={Trash2} 
+                          className="text-red-600 text-xs px-2 py-1" 
+                          onClick={() => removeAnalysis(s.id)}
+                        >
+                          <span className="hidden sm:inline">Delete</span>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* AI Analysis Modal */}
+      {activeTab === 'analysis' && isAnalysisModalOpen && (
+        <Modal isOpen={isAnalysisModalOpen} onClose={() => {
+          setIsAnalysisModalOpen(false);
+          setEditingAnalysis(null);
+          setAnalysisError(null);
+        }} title={editingAnalysis ? 'Edit Analysis Schedule' : 'New Analysis Schedule'}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Title</label>
+              <input className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisForm.title} onChange={(e) => setAnalysisForm({ ...analysisForm, title: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea className="mt-1 w-full px-3 py-2 border rounded-md" 
+                  maxLength={100} placeholder="Enter your text here (max 100 characters)"
+                  value={analysisForm.description} 
+                  onChange={(e) => setAnalysisForm({ ...analysisForm, description: e.target.value })} />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Model Type</label>
+              <select className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisForm.modelType} onChange={(e) => setAnalysisForm({ ...analysisForm, modelType: e.target.value as any })}>
+                {MODEL_TYPES.map(type => (
+                  <option key={type.key} value={type.key}>{type.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Builder vs Advanced toggle */}
+            <div className="flex items-center justify-between bg-gray-50 border rounded-md p-3">
+              <div className="text-sm text-gray-700">Scheduling Mode</div>
+              <div className="flex items-center space-x-3">
+                <label className="inline-flex items-center text-sm">
+                  <input type="radio" name="analysisMode" className="mr-2" checked={!useAnalysisAdvancedCron} onChange={() => setUseAnalysisAdvancedCron(false)} />
+                  Builder
+                </label>
+                <label className="inline-flex items-center text-sm">
+                  <input type="radio" name="analysisMode" className="mr-2" checked={useAnalysisAdvancedCron} onChange={() => setUseAnalysisAdvancedCron(true)} />
+                  Advanced
+                </label>
+              </div>
+            </div>
+
+            {!useAnalysisAdvancedCron ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Frequency</label>
+                    <select className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisScheduleType} onChange={(e) => setAnalysisScheduleType(e.target.value as any)}>
+                      <option value="once">Once</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Time</label>
+                    <input type="time" className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisTimeStr} onChange={(e) => setAnalysisTimeStr(e.target.value)} />
+                  </div>
+                </div>
+
+                {analysisScheduleType === 'once' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <input type="date" className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisDateOnce} onChange={(e) => setAnalysisDateOnce(e.target.value)} />
+                    <p className="text-xs text-gray-500 mt-1">Runs one time at the selected date and time.</p>
+                  </div>
+                )}
+
+                {analysisScheduleType === 'weekly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Days of Week</label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {WEEK_DAYS.map(d => (
+                        <button key={d.key} type="button" className={`px-3 py-1 rounded-md border text-sm ${analysisWeeklyDays.includes(d.key) ? 'bg-primary-100 border-primary-300 text-primary-700' : 'bg-white border-gray-300 text-gray-700'}`} onClick={() => toggleAnalysisWeeklyDay(d.key)}>
+                          {d.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Select one or more days.</p>
+                  </div>
+                )}
+
+                {analysisScheduleType === 'monthly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Day of Month</label>
+                    <input type="number" min={1} max={31} className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisMonthlyDay} onChange={(e) => setAnalysisMonthlyDay(parseInt(e.target.value || '1', 10))} />
+                  </div>
+                )}
+
+                <div className="bg-gray-50 border rounded-md p-3 text-sm">
+                  <div className="text-gray-700">Cron Preview</div>
+                  <div className="mt-1 font-mono text-gray-900">{analysisCronPreview}</div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Cron Expression</label>
+                  <input maxLength={100} placeholder="0 0 9 ? * SUN" className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisForm.cronExpression} onChange={(e) => setAnalysisForm({ ...analysisForm, cronExpression: e.target.value })} />
+                  <p className="mt-1 text-xs text-gray-500">Quartz cron format. Example: 0 0 9 ? * SUN (Sundays 9AM)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Time Zone</label>
+                  <input className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisForm.zoneId} onChange={(e) => setAnalysisForm({ ...analysisForm, zoneId: e.target.value })} />
+                </div>
+              </div>
+            )}
+
+            {/* Common fields continued */}
+            {useAnalysisAdvancedCron === false && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Time Zone</label>
+                <input className="mt-1 w-full px-3 py-2 border rounded-md" value={analysisForm.zoneId} onChange={(e) => setAnalysisForm({ ...analysisForm, zoneId: e.target.value })} />
+              </div>
+            )}
+
+            <div>
+              <label className="inline-flex items-center text-sm font-medium text-gray-700">
+                <input type="checkbox" className="mr-2" checked={analysisForm.enabled} onChange={(e) => setAnalysisForm({ ...analysisForm, enabled: e.target.checked })} />
+                Enabled
+              </label>
+            </div>
+            <div className="pt-2 flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => {
+                setIsAnalysisModalOpen(false);
+                setEditingAnalysis(null);
+                setAnalysisError(null);
+              }}>Cancel</Button>
+              <Button variant="primary" onClick={saveAnalysis}>{editingAnalysis ? 'Update' : 'Create'}</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+export default SchedulesPage;

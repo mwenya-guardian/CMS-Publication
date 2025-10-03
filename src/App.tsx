@@ -23,7 +23,7 @@ import { MembersPage } from './pages/admin/MemberPage';
 import {  GivingPage } from './pages/admin/GivingPage';
 import { UsersPage } from './pages/admin/UserPage';
 import { ChurchDetailsPage } from './pages/admin/ChurchDetailsPage';
-import { NewsletterSchedulesPage } from './pages/admin/NewsletterSchedulesPage';
+import { SchedulesPage} from './pages/admin/SchedulesPage';
 import { PostsPage as AdminPostsPage } from './pages/admin/PostsPage';
 import { AnalysisPage } from './pages/admin/AnalysisPage';
 
@@ -93,7 +93,7 @@ function App() {
             }/>
             <Route path="schedules" element={
               <ProtectedAdminRoutes>
-                <NewsletterSchedulesPage />
+                <SchedulesPage />
               </ProtectedAdminRoutes>
             }/>
             <Route path="members" element={

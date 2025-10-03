@@ -65,11 +65,7 @@ export const BulletinsPage: React.FC = () => {
       );
     }
 
-    if (filters.authorId) {
-      filtered = filtered.filter(bulletin => 
-        bulletin.author?.id === filters.authorId
-      );
-    }
+    // Note: authorId filter removed as author property doesn't exist on ChurchBulletin type
 
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
@@ -90,11 +86,13 @@ export const BulletinsPage: React.FC = () => {
 
   const handleCreate = () => {
     setSelectedBulletin(undefined);
+    setError(null);
     setIsEditorOpen(true);
   };
 
   const handleEdit = (bulletin: ChurchBulletin) => {
     setSelectedBulletin(bulletin);
+    setError(null);
     setIsEditorOpen(true);
   };
 
@@ -114,12 +112,13 @@ export const BulletinsPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       setError(null);
-      if (selectedBulletin) {
+      if (selectedBulletin?.id) {
         await bulletinService.update(selectedBulletin.id, data);
       } else {
         await bulletinService.create(data);
       }
       setIsEditorOpen(false);
+      setSelectedBulletin(undefined);
       await fetchBulletins();
     } catch (error) {
       console.error('Failed to save bulletin:', error);
@@ -165,6 +164,7 @@ export const BulletinsPage: React.FC = () => {
       setError('Failed to export PDF');
     }
   };
+
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -220,7 +220,7 @@ export const BulletinsPage: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            variant="outline"
+            variant="ghost"
             icon={Filter}
             onClick={() => setIsFiltersOpen(!isFiltersOpen)}
             className={hasActiveFilters ? 'bg-primary-50 border-primary-200 text-primary-700' : ''}
@@ -232,7 +232,7 @@ export const BulletinsPage: React.FC = () => {
             icon={Plus}
             onClick={handleCreate}
           >
-            New Bulletin
+            Bulletin
           </Button>
         </div>
       </div>
@@ -254,7 +254,7 @@ export const BulletinsPage: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="rounded-lg p-2">
           <div className="flex items-center">
             <div className="flex-shrink-0 p-3 rounded-lg bg-primary-100">
               <FileText className="h-6 w-6 text-primary-600" />
@@ -266,7 +266,7 @@ export const BulletinsPage: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="rounded-lg p-2">
           <div className="flex items-center">
             <div className="flex-shrink-0 p-3 rounded-lg bg-green-100">
               <Eye className="h-6 w-6 text-green-600" />
@@ -280,7 +280,7 @@ export const BulletinsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="rounded-lg p-2">
           <div className="flex items-center">
             <div className="flex-shrink-0 p-3 rounded-lg bg-yellow-100">
               <FileText className="h-6 w-6 text-yellow-600" />
@@ -294,7 +294,7 @@ export const BulletinsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="rounded-lg p-2">
           <div className="flex items-center">
             <div className="flex-shrink-0 p-3 rounded-lg bg-blue-100">
               <Clock className="h-6 w-6 text-blue-600" />
@@ -315,7 +315,8 @@ export const BulletinsPage: React.FC = () => {
       )}
 
       {/* Search Bar */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      {isFiltersOpen && (
+        <div className="rounded-lg p-4">
         <div className="flex items-center space-x-4">
           <div className="flex-1">
             <input
@@ -344,6 +345,8 @@ export const BulletinsPage: React.FC = () => {
           )}
         </div>
       </div>
+      )}
+      <hr className=''/>
 
       {/* Layout Toggle */}
       <div className="flex justify-between items-center">
@@ -394,7 +397,7 @@ export const BulletinsPage: React.FC = () => {
           {filteredBulletins.map((bulletin) => (
             <div
               key={bulletin.id}
-              className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow ${
+              className={`bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow ${
                 layoutType === 'list' ? 'flex' : ''
               }`}
             >
@@ -477,46 +480,50 @@ export const BulletinsPage: React.FC = () => {
                     Edit
                   </Button>
                   
-                  {bulletin.status === PublicationStatus.DRAFT && (
+                  {bulletin.status === PublicationStatus.DRAFT && bulletin.id && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handlePublish(bulletin.id)}
+                      onClick={() => bulletin.id && handlePublish(bulletin.id)}
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       Publish
                     </Button>
                   )}
                   
-                  {bulletin.status === PublicationStatus.PUBLISHED && (
+                  {bulletin.status === PublicationStatus.PUBLISHED && bulletin.id && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleUnpublish(bulletin.id)}
+                      onClick={() => bulletin.id && handleUnpublish(bulletin.id)}
                     >
                       <EyeOff className="w-4 h-4 mr-1" />
                       Unpublish
                     </Button>
                   )}
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleExportPdf(bulletin.id)}
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    PDF
-                  </Button>
+                  {bulletin.id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => bulletin.id && handleExportPdf(bulletin.id)}
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      PDF
+                    </Button>
+                  )}
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(bulletin.id)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
-                  </Button>
+                  {bulletin.id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => bulletin.id && handleDelete(bulletin.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -528,7 +535,11 @@ export const BulletinsPage: React.FC = () => {
       {isEditorOpen && (
         <Modal
           isOpen={isEditorOpen}
-          onClose={() => setIsEditorOpen(false)}
+          onClose={() => {
+            setIsEditorOpen(false);
+            setSelectedBulletin(undefined);
+            setError(null);
+          }}
           title={selectedBulletin ? 'Edit Bulletin' : 'Create New Bulletin'}
           size="xl"
           className="max-w-7xl sm:m-6" 
@@ -536,7 +547,11 @@ export const BulletinsPage: React.FC = () => {
           <BulletinEditor
             bulletin={selectedBulletin}
             onSave={handleSave}
-            onCancel={() => setIsEditorOpen(false)}
+            onCancel={() => {
+              setIsEditorOpen(false);
+              setSelectedBulletin(undefined);
+              setError(null);
+            }}
             isLoading={isSubmitting}
           />
         </Modal>

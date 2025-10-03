@@ -72,3 +72,16 @@ export interface AnalysisStats {
   recentAlerts: AnalysisAlert[];
   trendData: TrendData[];
 }
+
+export interface AnalysisSchedule {
+  id: string;
+  title: string;
+  cronExpression: string;
+  zoneId: string;
+  modelType: 'POST' | 'EVENT' | 'QUOTE' | 'PUBLICATION';
+  enabled: boolean;
+  lastRunAt?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}

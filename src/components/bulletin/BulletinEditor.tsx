@@ -110,6 +110,9 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
 
   // ---------- Initialize formData ----------
   useEffect(() => {
+    // Clear all modal states when bulletin changes
+    clearAllModalStates();
+    
     if (bulletin) {
       // Normalize schedules' activities into Maps for stable editing in the UI
       const normalizedSchedules = (bulletin.schedules || []).map(s => normalizeSchedule(s));
@@ -176,6 +179,27 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
 
     // announcements and onDutyList are left as-is (they should already be serializable)
     await onSave(payload);
+    
+    // Clear all modal states after successful save
+    clearAllModalStates();
+  };
+
+  // ---------- Helper functions ----------
+  const clearAllModalStates = () => {
+    // Close all modals
+    setIsScheduleModalOpen(false);
+    setIsAnnouncementModalOpen(false);
+    setIsOnDutyModalOpen(false);
+    
+    // Clear selected items
+    setSelectedSchedule(undefined);
+    setSelectedAnnouncement(undefined);
+    setSelectedOnDuty(undefined);
+    
+    // Clear selected indices
+    setSelectedScheduleIndex(undefined);
+    setSelectedAnnouncementIndex(undefined);
+    setSelectedOnDutyIndex(undefined);
   };
 
   // ---------- Field handlers ----------
