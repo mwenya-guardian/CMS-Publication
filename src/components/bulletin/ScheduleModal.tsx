@@ -62,6 +62,26 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
   };
 
   const [formData, setFormData] = useState<Schedule>(emptySchedule);
+  
+  // Time validation helpers
+  const toMinutes = (hhmm: string): number | null => {
+    if (!hhmm) return null;
+    const parts = hhmm.split(':');
+    if (parts.length < 2) return null;
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+    return hours * 60 + minutes;
+  };
+
+  const timeValidation = React.useMemo(() => {
+    const start = toMinutes(formData.startTime);
+    const end = toMinutes(formData.endTime);
+    if (start == null || end == null) return { status: 'ok' as const };
+    if (end < start) return { status: 'error' as const, message: 'End time must be after start time.' };
+    if (end === start) return { status: 'warn' as const, message: 'End time is the same as start time.' };
+    return { status: 'ok' as const };
+  }, [formData.startTime, formData.endTime]);
 
   // UI inputs for adding/editing activities
   const [activityKey, setActivityKey] = useState('');     // e.g. "09:00" or "9:00 AM" or "Opening"
@@ -147,6 +167,10 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
     if (!formData.startTime?.trim() || !formData.endTime?.trim()) {
       return;
     }
+    // Enforce end time after start time
+    if (timeValidation.status === 'error' || timeValidation.status === 'warn') {
+      return;
+    }
     // Ensure scheduledActivities is a Map (it already is in our state)
     const result: Schedule = {
       ...formData,
@@ -168,7 +192,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
       title={schedule ? 'Edit Schedule' : 'Add Schedule'}
       size="md"
     >
-      <div className="space-y-4">
+      <div className="space-y-4 select-none">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Title *
@@ -177,7 +201,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
             type="text"
             value={formData.title}
             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            placeholder="e.g., Song Service"
+            placeholder="e.g., First Service"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -203,8 +227,13 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
               type="time"
               value={formData.endTime}
               onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${timeValidation.status === 'error' ? 'border-red-500 focus:ring-red-500' : timeValidation.status === 'warn' ? 'border-yellow-400 focus:ring-yellow-400' : 'border-gray-300 focus:ring-blue-500'}`}
             />
+            {timeValidation.status !== 'ok' && (
+              <p className={`mt-1 text-xs ${timeValidation.status === 'error' ? 'text-red-600' : 'text-yellow-600'}`}>
+                {timeValidation.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -230,7 +259,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
               type="text"
               value={activityKey}
               onChange={(e) => setActivityKey(e.target.value)}
-              placeholder="Time or label (e.g., 09:00 or Opening)"
+              placeholder="e.g Song Service"
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -243,7 +272,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
               type="text"
               value={activityValue}
               onChange={(e) => setActivityValue(e.target.value)}
-              placeholder="Activity (e.g., Song Service)"
+              placeholder="e.g John"
               className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -287,7 +316,11 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSave}>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={timeValidation.status === 'error' || timeValidation.status === 'warn'}
+          >
             Save Schedule
           </Button>
         </div>

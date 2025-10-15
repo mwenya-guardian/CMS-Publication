@@ -223,7 +223,13 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
 
   // ---------- Schedule handlers ----------
   const handleAddSchedule = () => {
-    setSelectedSchedule(undefined);
+    setSelectedSchedule(normalizeSchedule({
+      title: '',
+      startTime: '',
+      endTime: '',
+      scheduledDate: formData.bulletinDate || new Date().toISOString().split('T')[0],
+      scheduledActivities: new Map<string, string>(),
+    }));
     setSelectedScheduleIndex(undefined);
     setIsScheduleModalOpen(true);
   };
@@ -313,6 +319,12 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
   const handleAddOnDuty = () => {
     setSelectedOnDuty(undefined);
     setSelectedOnDutyIndex(undefined);
+    setSelectedOnDuty({
+      role: '',
+      activity: '',
+      participates: [],
+      date: formData.bulletinDate || new Date().toISOString().split('T')[0]
+    });
     setIsOnDutyModalOpen(true);
   };
 

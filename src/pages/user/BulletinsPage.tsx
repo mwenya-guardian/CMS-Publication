@@ -1,13 +1,14 @@
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BulletinCard } from '../../components/bulletin/BulletinCard';
-import { BulletinViewCard } from '../../components/bulletin/BulletinViewCard';
 import { Pagination } from '../../components/common/Pagination';
 import { ChurchBulletin, PublicationStatus } from '../../types/ChurchBulletin';
 import { bulletinService } from '../../services/bulletinService';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { exportUtils} from '../../utils/exportUtils';
 import { Modal } from '../../components/common/Modal';
-import ReactDOMServer from "react-dom/server";
+import { Button } from '../../components/common/Button';
+import { Calendar, Clock, Users, Download } from 'lucide-react';
+import { dateUtils } from '../../utils/dateUtils';
 
 export const BulletinsPage: React.FC = () => {
   const [bulletins, setBulletins] = useState<ChurchBulletin[]>([]);
@@ -57,32 +58,91 @@ export const BulletinsPage: React.FC = () => {
     }
   };
 
-  // const handlePdfGenerate = async (pdfSource: ReactNode) => {
-  //   let tempdiv = document.createElement('div');
-  //   tempdiv.innerHTML = ReactDOMServer.renderToStaticMarkup(
-  //     pdfSource);
-  //   exportUtils.generatePDF(tempdiv);
-  // }
-  // const triggerGenerate = () => {
-  //   console.log(`Triggered before`);
-  //   handlePdfGenerate(        
-  //     <Modal
-  //       isOpen={showModal}
-  //       onClose={() => {
-  //         setShowModal(false);
-  //         setSelectedBulletin(null);
-  //       }}
-  //       title={'Church Bulletin'}
-  //       size="xl"
-  //     >
-  //       <BulletinViewCard 
-  //       bulletin={bulletins[0]}
-  //       onExport={handleExport}
-  //       onView={setShowModal}
-  //       />
-  //     </Modal>);
-  //     console.log(`Triggered after`);
-  // }
+  const getStatusColor = (status: PublicationStatus) => {
+    switch (status) {
+      case PublicationStatus.PUBLISHED:
+        return 'bg-green-100 text-green-800';
+      case PublicationStatus.DRAFT:
+        return 'bg-yellow-100 text-yellow-800';
+      case PublicationStatus.SCHEDULED:
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Helper - normalize scheduledActivities to array of [key,value]
+  const entriesFromScheduledActivities = (scheduledActivities: any): [string, string][] => {
+    if (!scheduledActivities) return [];
+
+    // Map instance
+    if (scheduledActivities instanceof Map) {
+      return Array.from((scheduledActivities as Map<string, string>).entries());
+    }
+
+    // Array of pairs e.g. [['09:00','Opening'], ...] or [{key, value}, ...]
+    if (Array.isArray(scheduledActivities)) {
+      const out: [string, string][] = [];
+      for (const el of scheduledActivities) {
+        if (Array.isArray(el) && el.length >= 2) {
+          out.push([String(el[0]), String(el[1] ?? '')]);
+        } else if (el && typeof el === 'object' && ('key' in el || 'time' in el)) {
+          const key = el.key ?? el.time ?? Object.keys(el)[0];
+          const value = el.value ?? el.activity ?? el[Object.keys(el)[0]];
+          out.push([String(key), String(value ?? '')]);
+        }
+      }
+      return out;
+    }
+
+    // Plain object { "09:00": "Opening", ... }
+    if (typeof scheduledActivities === 'object') {
+      return Object.entries(scheduledActivities).map(([k, v]) => [k, String(v ?? '')]);
+    }
+
+    return [];
+  };
+
+  // Helper - normalize roleAssignment (if present) to array of {role, participates[]}
+  const normalizeRoleAssignments = (roleAssignment: any) => {
+    if (!roleAssignment) return [];
+    if (Array.isArray(roleAssignment)) return roleAssignment;
+    if (typeof roleAssignment === 'object') {
+      // object with numeric keys?
+      return Object.values(roleAssignment);
+    }
+    return [];
+  };
+
+  // Helper - normalize activityDetails: object of key -> string[] or string
+  const normalizeActivityDetails = (activityDetails: any): [string, string[]][] => {
+    if (!activityDetails) return [];
+    if (Array.isArray(activityDetails)) {
+      // array-of-entries
+      return activityDetails.map((el: any) => {
+        if (Array.isArray(el) && el.length >= 2) {
+          const [k, v] = el;
+          return [String(k), Array.isArray(v) ? v.map(String) : [String(v)]];
+        }
+        if (el && typeof el === 'object' && ('key' in el || 'values' in el)) {
+          const key = el.key ?? Object.keys(el)[0];
+          const vals = el.values ?? el.values ?? el.value ?? [];
+          return [String(key), Array.isArray(vals) ? vals.map(String) : [String(vals)]];
+        }
+        return [String(el), []];
+      });
+    }
+
+    if (typeof activityDetails === 'object') {
+      return Object.entries(activityDetails).map(([k, v]) => {
+        if (Array.isArray(v)) return [k, v.map(String)];
+        return [k, [String(v)]];
+      });
+    }
+
+    return [];
+  };
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -120,7 +180,6 @@ export const BulletinsPage: React.FC = () => {
             bulletin={bulletin} 
             onView={handleBulletinClick}
             onExportPdf={handleExport}
-            // onGenerate={triggerGenerate}
             />
           ))
         )}
@@ -137,11 +196,202 @@ export const BulletinsPage: React.FC = () => {
           title={selectedBulletin.title || 'Church Bulletin'}
           size="xl"
         >
-          <BulletinViewCard 
-          bulletin={selectedBulletin}
-          onExport={handleExport}
-          onView={setShowModal}
-          />
+          <div className="space-y-6">
+            {/* Header / Metadata */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold mb-1">{selectedBulletin.title}</h2>
+                <div className="text-sm text-gray-600">
+                  Bulletin Date: {new Date(selectedBulletin.bulletinDate).toLocaleDateString()}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Status: <span className={`inline-block px-2 py-0.5 rounded text-xs ${getStatusColor(selectedBulletin.status)}`}>{selectedBulletin.status}</span>
+                </div>
+                {selectedBulletin.scheduledPublishAt && (
+                  <div className="text-sm text-gray-600">Scheduled Publish: {dateUtils.formatDateTime(selectedBulletin.scheduledPublishAt)}</div>
+                )}
+                <div className="text-xs text-gray-500 mt-2">
+                  ID: {selectedBulletin.id}
+                </div>
+              </div>
+
+              <div className="text-right text-sm text-gray-600">
+                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt || new Date())}</div>
+                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt || new Date())}</div>
+                {/* createdBy / updatedBy may or may not exist on the object */}
+                {(selectedBulletin as any).createdBy && <div>By: {(selectedBulletin as any).createdBy}</div>}
+                {(selectedBulletin as any).updatedBy && <div>Updated by: {(selectedBulletin as any).updatedBy}</div>}
+              </div>
+            </div>
+
+            {/* Cover */}
+            {selectedBulletin.cover && (
+              <div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-lg p-6">
+                <h3 className="text-xl font-semibold mb-2">{selectedBulletin.cover.documentName || 'Cover'}</h3>
+                {selectedBulletin.cover.welcomeMessage && (
+                  <p className="text-blue-100 mb-2">{selectedBulletin.cover.welcomeMessage}</p>
+                )}
+                {selectedBulletin.cover.footerMessage && (
+                  <p className="text-sm text-blue-200 mt-2">{selectedBulletin.cover.footerMessage}</p>
+                )}
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold mb-3">Full Content</h3>
+              {selectedBulletin.content ? (
+                // show content as rendered HTML if it appears to contain HTML, otherwise as plain
+                <div className="prose max-w-none">
+                  {/* Danger: rendering HTML — if content originates from users, sanitize on the server */}
+                  <div dangerouslySetInnerHTML={{ __html: selectedBulletin.content }} />
+                </div>
+              ) : (
+                <p className="text-gray-600">No content provided.</p>
+              )}
+            </div>
+
+            {/* Schedules (detailed) */}
+            {selectedBulletin.schedules && selectedBulletin.schedules.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+                  Order of Worship
+                </h3>
+
+                <div className="space-y-4">
+                  {selectedBulletin.schedules
+                    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                    .map((schedule, index) => {
+                    const activityEntries = entriesFromScheduledActivities((schedule as any).scheduledActivities ?? (schedule as any).activityDetails ?? {});
+                    const roleAssignments = normalizeRoleAssignments((schedule as any).roleAssignment ?? (schedule as any).roles ?? []);
+                    const activityDetails = normalizeActivityDetails((schedule as any).activityDetails ?? (schedule as any).scheduledActivities ?? {});
+
+                    return (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-800">{schedule.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              {schedule.scheduledDate} • {schedule.startTime} - {schedule.endTime}
+                            </p>
+                          </div>
+                          <div className="text-sm text-gray-600 flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            <span>{schedule.startTime} - {schedule.endTime}</span>
+                          </div>
+                        </div>
+
+                        {/* Role Assignments */}
+                        {roleAssignments.length > 0 && (
+                          <div className="mb-3">
+                            <h5 className="font-medium text-gray-700 mb-2">Roles</h5>
+                            <div className="space-y-2">
+                              {roleAssignments.map((r: any, ri: number) => (
+                                <div key={ri} className="flex items-start gap-3 text-sm">
+                                  <Users className="w-4 h-4 mt-1 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium">{r.role || r.label || 'Role'}</div>
+                                    <div className="text-gray-600">{Array.isArray(r.participates) ? r.participates.join(', ') : String(r.participates ?? '')}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Activities (scheduledActivities or activityDetails) */}
+                        {activityEntries.length > 0 && (
+                          <div className="mb-3">
+                            <h5 className="font-medium text-gray-700 mb-2">Activities</h5>
+                            <div className="space-y-1 text-sm text-gray-700">
+                              {activityEntries.map(([k, v]) => (
+                                <div key={k}><span className="font-medium">{k}:</span> <span className="ml-2">{v}</span></div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* activityDetails with array values */}
+                        {activityDetails.length > 0 && (
+                          <div className="mb-0">
+                            <h5 className="font-medium text-gray-700 mb-2">Activity Details</h5>
+                            <div className="space-y-1 text-sm text-gray-700">
+                              {activityDetails.map(([k, vals], ai) => (
+                                <div key={ai}><span className="font-medium">{k}:</span> <span className="ml-2">{vals.join(', ')}</span></div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Announcements */}
+            {selectedBulletin.announcements && selectedBulletin.announcements.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Announcements</h3>
+                <div className="space-y-4">
+                  {selectedBulletin.announcements.map((announcement, index) => (
+                    <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-1">{announcement.title}</h4>
+                      {/* <p className="text-gray-700">{announcement.content}</p> */}
+                      <div className="prose max-w-none">
+                        {/* Danger: rendering HTML — if content originates from users, sanitize on the server */}
+                        <div dangerouslySetInnerHTML={{ __html: announcement.content }} />
+                        </div>
+                      </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* On Duty */}
+            {selectedBulletin.onDutyList && selectedBulletin.onDutyList.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">On Duty Today</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedBulletin.onDutyList.map((duty, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-800">{duty.role}</h4>
+                      {duty.activity && <p className="text-sm text-blue-600 mb-2">{duty.activity}</p>}
+                      <p className="text-sm text-gray-700 mb-1">Participants: {Array.isArray(duty.participates) ? duty.participates.join(', ') : String(duty.participates ?? '')}</p>
+                      <p className="text-sm text-gray-600">Date: {duty.date}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Footer: metadata + actions */}
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-600">
+                <div>Created: {dateUtils.formatDateTime(selectedBulletin.createdAt || new Date())}</div>
+                <div>Updated: {dateUtils.formatDateTime(selectedBulletin.updatedAt || new Date())}</div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => selectedBulletin.id && handleExport(selectedBulletin.id, 'pdf')}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => selectedBulletin.id && handleExport(selectedBulletin.id, 'word')}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Word
+                </Button>
+                <Button variant="primary" onClick={() => setShowModal(false)}>Close</Button>
+              </div>
+            </div>
+          </div>
         </Modal>
       )}
 

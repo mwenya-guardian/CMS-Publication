@@ -47,6 +47,10 @@ export const userService = {
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/users/${id}`);
+  },
+  async resetPassword(email: string): Promise<User> {
+    const response = await api.put<ApiResponse<User>>(`/users/reset-password?email=${email}`);
+    return response.data.data;
   }
 };
 

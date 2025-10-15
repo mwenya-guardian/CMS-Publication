@@ -22,6 +22,8 @@ export const SchedulesPage: React.FC = () => {
   const [analysisSchedules, setAnalysisSchedules] = useState<AnalysisSchedule[]>([]);
   const [analysisLoading, setAnalysisLoading] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [runningAnalysisId, setRunningAnalysisId] = useState<string | null>(null);
+  const [analysisRunNotice, setAnalysisRunNotice] = useState<string | null>(null);
 
   // Newsletter modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -339,10 +341,17 @@ export const SchedulesPage: React.FC = () => {
 
   const runAnalysisNow = async (id: string) => {
     try {
+      setRunningAnalysisId(id);
       await analysisScheduleService.runNow(id);
     } catch (e) {
       console.error(e);
       setAnalysisError('Failed to trigger analysis schedule');
+    } finally {
+      // Simulate async kickoff: stop loading after a short delay and show notice
+      setTimeout(() => {
+        setRunningAnalysisId(null);
+        setAnalysisRunNotice('Analysis is running. Results will be ready soon.');
+      }, 1500);
     }
   };
 
@@ -444,6 +453,12 @@ export const SchedulesPage: React.FC = () => {
       {(error || analysisError) && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
           {error || analysisError}
+        </div>
+      )}
+
+      {analysisRunNotice && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700">
+          {analysisRunNotice}
         </div>
       )}
 
@@ -744,9 +759,18 @@ export const SchedulesPage: React.FC = () => {
                           size="sm" 
                           icon={Play} 
                           onClick={() => runAnalysisNow(s.id)}
+                          disabled={runningAnalysisId === s.id}
                           className="text-xs px-2 py-1"
                         >
-                          <span className="hidden sm:inline">Run</span>
+                          {runningAnalysisId === s.id ? (
+                            <span className="flex items-center gap-2">
+                              <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                              <span className="hidden sm:inline">Starting…</span>
+                              <span className="sm:hidden">…</span>
+                            </span>
+                          ) : (
+                            <span className="hidden sm:inline">Run</span>
+                          )}
                         </Button>
                         <Button 
                           variant="outline" 

@@ -143,7 +143,7 @@ export const UserForm: React.FC<UserFormProps> = ({
             { value: 'ADMIN', label: 'Admin' },
             { value: 'EDITOR', label: 'Editor' },
             { value: 'USER', label: 'User' },
-            // { value: 'VIEWER', label: 'Viewer' }
+            { value: 'VIEWER', label: 'Viewer' }
           ]}
         />
 

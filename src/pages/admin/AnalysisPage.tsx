@@ -54,7 +54,6 @@ export const AnalysisPage: React.FC = () => {
   
   // Filters
   const [entityTypeFilter, setEntityTypeFilter] = useState<string>('');
-  const [sentimentFilter, setSentimentFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   
   // Modal state
@@ -111,7 +110,6 @@ export const AnalysisPage: React.FC = () => {
   const loadFlaggedComments = async () => {
     const filters = {
       entityType: entityTypeFilter || undefined,
-      sentiment: sentimentFilter || undefined,
       search: searchTerm || undefined
     };
     
@@ -204,50 +202,58 @@ export const AnalysisPage: React.FC = () => {
     return (
       <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 rounded-lg bg-blue-600">
-                <MessageCircle className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-4 flex-1">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 flex items-center justify-center">
+            <div className='flex flex-col col-1'>
+              <div className="flex items-center">
+                <div className="flex-shrink-0 p-3 mr-2 rounded-lg bg-blue-600">
+                  <MessageCircle className="h-4 w-4 text-white" />
+                </div>
                 <p className="text-sm font-medium text-gray-600">Total Analyzed</p>
+              </div>
+              <div className="flex items-center justify-center">
                 <p className="text-2xl font-semibold text-gray-900">{stats.totalAnalyzed}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 rounded-lg bg-red-600">
-                <AlertTriangle className="h-6 w-6 text-white" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 flex items-center justify-center">
+            <div className="flex flex-col col-1">
+              <div className="flex items-center">
+              <div className="flex-shrink-0 p-3 mr-2 rounded-lg bg-red-600">
+                <AlertTriangle className="h-4 w-4 text-white" />
               </div>
-              <div className="ml-4 flex-1">
                 <p className="text-sm font-medium text-gray-600">Flagged Comments</p>
+                </div>
+              <div className="flex items-center justify-center">
                 <p className="text-2xl font-semibold text-gray-900">{stats.flaggedComments}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 rounded-lg bg-green-600">
-                <TrendingUp className="h-6 w-6 text-white" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 flex items-center justify-center">
+            <div className="flex flex-col col-1">
+              <div className="flex items-center">
+              <div className="flex-shrink-0 p-3 mr-2 rounded-lg bg-green-600">
+                <TrendingUp className="h-4 w-4 text-white" />
               </div>
-              <div className="ml-4 flex-1">
                 <p className="text-sm font-medium text-gray-600">Positive Sentiment</p>
+                </div>
+              <div className="flex items-center justify-center">
                 <p className="text-2xl font-semibold text-gray-900">{stats.sentimentBreakdown.positive}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-3 rounded-lg bg-orange-600">
-                <Brain className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-4 flex-1">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 flex items-center justify-center">
+            <div className="flex flex-col col-1">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 p-2 rounded-lg bg-orange-600 mr-2">
+                  <Brain className="h-4 w-4 text-white" />
+                </div>
                 <p className="text-sm font-medium text-gray-600">Recent Alerts</p>
+              </div>
+              <div className="flex items-center justify-center">
                 <p className="text-2xl font-semibold text-gray-900">{stats.recentAlerts.length}</p>
               </div>
             </div>
@@ -358,17 +364,6 @@ export const AnalysisPage: React.FC = () => {
             ]}
             className="w-40"
           />
-          <Select
-            value={sentimentFilter}
-            onChange={setSentimentFilter}
-            options={[
-              { value: '', label: 'All Sentiments' },
-              { value: 'positive', label: 'Positive' },
-              { value: 'neutral', label: 'Neutral' },
-              { value: 'negative', label: 'Negative' }
-            ]}
-            className="w-40"
-          />
           <Button onClick={loadFlaggedComments} icon={Filter} variant="outline">
             Apply Filters
           </Button>
@@ -423,7 +418,7 @@ export const AnalysisPage: React.FC = () => {
 
       {/* Trend Chart */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <TrendChart data={trendData} height={400} />
+        <TrendChart data={trendData} height={500} />
       </div>
     </div>
   );
@@ -541,18 +536,20 @@ export const AnalysisPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="">
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">AI Analysis</h1>
-          <p className="text-gray-600 mt-2">Monitor comment sentiment and moderation insights</p>
-        </div>
-        <Button onClick={handleRefresh} icon={RefreshCw} variant="outline">
+        <Button onClick={handleRefresh} icon={RefreshCw} variant="ghost">
           Refresh
         </Button>
+        </div>
+      <div>
+          <p className="text-gray-600 mt-2">Monitor comment sentiment and moderation insights</p>
+      </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 overflow-x-auto">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
             const Icon = tab.icon;

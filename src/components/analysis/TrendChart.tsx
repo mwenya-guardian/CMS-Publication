@@ -9,7 +9,7 @@ interface TrendChartProps {
 
 export const TrendChart: React.FC<TrendChartProps> = ({ 
   data, 
-  height = 200, 
+  height = 300, 
   className = '' 
 }) => {
   if (!data || data.length === 0) {
@@ -84,7 +84,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({
             <polyline
               fill="none"
               stroke="#10b981"
-              strokeWidth="0.2"
+              strokeWidth="0.3"
               points={generatePath(positiveValues, '#10b981')}
               className="drop-shadow-sm"
             />
@@ -93,7 +93,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({
             <polyline
               fill="none"
               stroke="#6b7280"
-              strokeWidth="0.2"
+              strokeWidth="0.3"
               points={generatePath(neutralValues, '#6b7280')}
               className="drop-shadow-sm"
             />
@@ -102,7 +102,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({
             <polyline
               fill="none"
               stroke="#ef4444"
-              strokeWidth="0.2"
+              strokeWidth="0.3"
               points={generatePath(negativeValues, '#ef4444')}
               className="drop-shadow-sm"
             />

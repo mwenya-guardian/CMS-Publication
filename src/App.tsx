@@ -1,62 +1,97 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { PWAProvider } from './contexts/PWAContext';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AdminLayout } from './components/layout/AdminLayout';
+import { UserLayout } from './components/layout/UserLayout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { ProtectedAdminRoutes } from './components/auth/ProtectedAdminRoutes';
+import { LazyLoadingWrapper } from './components/common/LazyLoadingWrapper';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { ApiInterceptorSetup } from './components/common/ApiInterceptorSetup';
 
-// Public Pages
-import { Home } from './pages/public/Home';
-import { PublicationsView } from './pages/public/PublicationsView';
-import { EventsView } from './pages/public/EventsView';
-import { QuotesView } from './pages/public/QuotesView';
-import { BulletinsView } from './pages/public/BulletinsView';
-import { AboutView } from './pages/public/AboutView';
-
-// Admin Pages
-import { Dashboard } from './pages/admin/Dashboard';
-import { PublicationsPage } from './pages/admin/PublicationsPage';
-import { EventsPage } from './pages/admin/EventsPage';
-import { QuotesPage } from './pages/admin/QuotesPage';
-import { BulletinsPage } from './pages/admin/BulletinsPage';
-import { MembersPage } from './pages/admin/MemberPage'; 
-import {  GivingPage } from './pages/admin/GivingPage';
-import { UsersPage } from './pages/admin/UserPage';
-import { ChurchDetailsPage } from './pages/admin/ChurchDetailsPage';
-import { SchedulesPage} from './pages/admin/SchedulesPage';
-import { PostsPage as AdminPostsPage } from './pages/admin/PostsPage';
-import { AnalysisPage } from './pages/admin/AnalysisPage';
-
-// User Pages
-import { UserLayout } from './components/layout/UserLayout';
-import { UserHome } from './pages/user/UserHomePage';
-import { PostsPage } from './pages/user/PostsPage';
-import { BulletinsPage as UserBulletinsPage } from './pages/user/BulletinsPage';
-import { LikedPostsPage } from './pages/user/LikedPostsPage';
-import { SettingsPage } from './pages/user/SettingsPage';
-
-// Auth Pages
-import { Login } from './pages/auth/Login';
-import { Register } from './pages/auth/Register';
+// Lazy loaded components
+import {
+  LazyHome,
+  LazyPublicationsView,
+  LazyEventsView,
+  LazyQuotesView,
+  LazyBulletinsView,
+  LazyAboutView,
+  LazyDashboard,
+  LazyPublicationsPage,
+  LazyEventsPage,
+  LazyQuotesPage,
+  LazyBulletinsPage,
+  LazyMembersPage,
+  LazyGivingPage,
+  LazyUsersPage,
+  LazyChurchDetailsPage,
+  LazySchedulesPage,
+  LazyAdminPostsPage,
+  LazyAnalysisPage,
+  LazyUserHome,
+  LazyPostsPage,
+  LazyUserBulletinsPage,
+  LazyLikedPostsPage,
+  LazySettingsPage,
+  LazyLogin,
+  LazyRegister
+} from './utils/lazyLoading';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <ErrorBoundary>
+      <PWAProvider>
+        <AuthProvider>
+          <ApiInterceptorSetup />
+          <Router>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
-            <Route index element={<Home />} />
-            <Route path="publications" element={<PublicationsView />} />
-            <Route path="events" element={<EventsView />} />
-            <Route path="quotes" element={<QuotesView />} />
-            <Route path="bulletins" element={<BulletinsView />} />
-            <Route path="about" element={<AboutView />} />
+            <Route index element={
+              <LazyLoadingWrapper>
+                <LazyHome />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="publications" element={
+              <LazyLoadingWrapper>
+                <LazyPublicationsView />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="events" element={
+              <LazyLoadingWrapper>
+                <LazyEventsView />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="quotes" element={
+              <LazyLoadingWrapper>
+                <LazyQuotesView />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="bulletins" element={
+              <LazyLoadingWrapper>
+                <LazyBulletinsView />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="about" element={
+              <LazyLoadingWrapper>
+                <LazyAboutView />
+              </LazyLoadingWrapper>
+            } />
           </Route>
 
           {/* Auth Routes */}
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/register" element={<Register />} />
+          <Route path="/auth/login" element={
+            <LazyLoadingWrapper>
+              <LazyLogin />
+            </LazyLoadingWrapper>
+          } />
+          <Route path="/auth/register" element={
+            <LazyLoadingWrapper>
+              <LazyRegister />
+            </LazyLoadingWrapper>
+          } />
 
           {/* User Routes (Protected) */}
           <Route path="/user" element={
@@ -64,11 +99,31 @@ function App() {
               <UserLayout />
             </ProtectedRoute>
           }>
-            <Route index element={<UserHome />} />
-            <Route path="posts" element={<PostsPage />} />
-            <Route path="bulletins" element={<UserBulletinsPage />} />
-            <Route path="liked" element={<LikedPostsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
+            <Route index element={
+              <LazyLoadingWrapper>
+                <LazyUserHome />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="posts" element={
+              <LazyLoadingWrapper>
+                <LazyPostsPage />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="bulletins" element={
+              <LazyLoadingWrapper>
+                <LazyUserBulletinsPage />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="liked" element={
+              <LazyLoadingWrapper>
+                <LazyLikedPostsPage />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="settings" element={
+              <LazyLoadingWrapper>
+                <LazySettingsPage />
+              </LazyLoadingWrapper>
+            } />
           </Route>
 
           {/* Admin Routes (Protected) */}
@@ -77,48 +132,80 @@ function App() {
               <AdminLayout />
             </ProtectedRoute>
           }>
-            <Route index element={<Dashboard />} />
-            <Route path="publications" element={<PublicationsPage />} />
-            <Route path="events" element={<EventsPage />} />
-            <Route path="quotes" element={<QuotesPage />} />
+            <Route index element={
+              <LazyLoadingWrapper>
+                <LazyDashboard />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="publications" element={
+              <LazyLoadingWrapper>
+                <LazyPublicationsPage />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="events" element={
+              <LazyLoadingWrapper>
+                <LazyEventsPage />
+              </LazyLoadingWrapper>
+            } />
+            <Route path="quotes" element={
+              <LazyLoadingWrapper>
+                <LazyQuotesPage />
+              </LazyLoadingWrapper>
+            } />
             <Route path="posts" element={
               <ProtectedAdminRoutes>
-                <AdminPostsPage />
+                <LazyLoadingWrapper>
+                  <LazyAdminPostsPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
             <Route path="bulletins" element={
               <ProtectedAdminRoutes>
-                <BulletinsPage />
+                <LazyLoadingWrapper>
+                  <LazyBulletinsPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
             <Route path="schedules" element={
               <ProtectedAdminRoutes>
-                <SchedulesPage />
+                <LazyLoadingWrapper>
+                  <LazySchedulesPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
             <Route path="members" element={
               <ProtectedAdminRoutes>
-                <MembersPage />
+                <LazyLoadingWrapper>
+                  <LazyMembersPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
             <Route path="giving" element={
               <ProtectedAdminRoutes>
-                <GivingPage />
+                <LazyLoadingWrapper>
+                  <LazyGivingPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
             <Route path="users" element={
               <ProtectedAdminRoutes>
-                <UsersPage />
+                <LazyLoadingWrapper>
+                  <LazyUsersPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
             <Route path="church-details" element={
               <ProtectedAdminRoutes>
-                <ChurchDetailsPage />
+                <LazyLoadingWrapper>
+                  <LazyChurchDetailsPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
             <Route path="analysis" element={
               <ProtectedAdminRoutes>
-                <AnalysisPage />
+                <LazyLoadingWrapper>
+                  <LazyAnalysisPage />
+                </LazyLoadingWrapper>
               </ProtectedAdminRoutes>
             }/>
           </Route>
@@ -126,8 +213,10 @@ function App() {
           {/* Catch all route - redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
-    </AuthProvider>
+          </Router>
+        </AuthProvider>
+      </PWAProvider>
+    </ErrorBoundary>
   );
 }
 

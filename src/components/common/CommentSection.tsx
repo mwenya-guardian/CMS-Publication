@@ -93,7 +93,9 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
           {/* Comments list */}
           <div className="space-y-3 col-span-1 max-h-[300px] overflow-y-auto max-w-[500px] scrollbar-hide">
-            {comments.map((comment) => {
+            {comments
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .map((comment) => {
               const displayName = userNames[comment.userId] || comment.userName || 'Loading...';
               const initials = displayName.split(' ').map(name => name.charAt(0)).join('').toUpperCase() || 'U';
               
