@@ -32,7 +32,7 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         content: ''
       });
     }
-  }, [announcement]);
+  }, [announcement, isOpen]);
 
   const handleSave = () => {
     if (formData.title && formData.content) {

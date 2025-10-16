@@ -10,9 +10,19 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
+    const token = localStorage.getItem('authToken');
+    // Clear client state regardless
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-    await api.post('/auth/logout');
+    localStorage.removeItem('expiresAt');
+    // Only call backend if we had a session token
+    if (token) {
+      try {
+        await api.post('/auth/logout');
+      } catch (_) {
+        // Ignore network/logout errors during client logout
+      }
+    }
   },
 
   isExpired(): boolean {

@@ -5,6 +5,8 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { LogIn, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { userService } from '../../services/userService';
+import { Modal } from '../../components/common/Modal';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,7 +14,7 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [isOpen, setIsOpen] = useState(false);
   const { login, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -143,7 +145,7 @@ export const Login: React.FC = () => {
             <div className="mt-4 bg-gray-50 rounded-md p-4">
               {/* <p className="text-xs text-gray-600 mb-2">For demo purposes, use:</p> */}
               <div className="space-y-1 text-xs">
-                <p><strong>Email:</strong> admin@example.com</p>
+                <p><strong>Email:</strong> user@example.com</p>
                 <p><strong>Password:</strong> password</p>
               </div>
             </div>
@@ -155,10 +157,22 @@ export const Login: React.FC = () => {
                 Don't have an account?{' '}
                 <Link
                   to="/auth/register"
-                  className="font-medium text-primary-600 hover:text-primary-500 transition-colors duration-200"
+                  className="font-medium text-primary-600 hover:text-primary-400 transition-colors duration-200"
                 >
                   Sign Up
                 </Link>
+              </p>
+            </div>
+            <div className='font-medium'>
+              <p className="text-sm text-gray-600">Forgot your password?{' '}
+              <button
+                onClick={() => {
+                  setIsOpen(true);
+                }}
+                className="inline-flex items-center text-sm text-primary-600 hover:text-primary-400 transition-colors duration-200"
+              >
+                Reset Password
+              </button>
               </p>
             </div>
             <div>
@@ -173,6 +187,94 @@ export const Login: React.FC = () => {
           </div>
         </div>
       </div>
+      <ResetPassword isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   );
 };
+const ResetPassword: React.FC<{isOpen: boolean, setIsOpen: (onOpen: boolean) => void}> = ({isOpen, setIsOpen}) => {
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  const handleClose = () => {
+    setEmail('');
+    setError('');
+    setSuccess('');
+    setIsSubmitting(false);
+    setIsOpen(false);
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setIsSubmitting(true);
+    try {
+      await userService.resetPassword(email);
+      setSuccess('Reset password email sent successfully!');
+      setEmail(''); // Clear the form
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Reset password failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal
+      title='Reset Password'
+      isOpen={isOpen}
+      onClose={handleClose}
+    >
+      <div className='w-full max-w-md mx-auto bg-green/60 backdrop-blur-md border-r-20 py-4 px-4 shadow-md sm:rounded-lg sm:px-10'>
+        <div className='text-center mb-6'>
+          <h1 className='text-2xl font-bold text-gray-900'>Reset Password</h1>
+          <p className='mt-2 text-sm text-gray-600'>Enter your email to reset your password</p>
+        </div>
+        
+        <form className='space-y-4' onSubmit={handleSubmit}>
+          <Input
+            label='Email'
+            type='email'
+            value={email}
+            onChange={setEmail}
+            required
+            placeholder='Enter your email'
+            disabled={isSubmitting}
+          />
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+          
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-3">
+              <p className="text-sm text-green-600">{success}</p>
+            </div>
+          )}
+          
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleClose}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={isSubmitting}
+              className="flex-1"
+            >
+              Reset Password
+            </Button>
+          </div>
+        </form>
+      </div>
+    </Modal>
+  );
+};  

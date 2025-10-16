@@ -247,7 +247,10 @@ export const BulletinsView: React.FC = () => {
                       Services ({bulletin.schedules.length})
                     </h5>
                     <div className="space-y-1">
-                      {bulletin.schedules.slice(0, 2).map((schedule, index) => (
+                      {bulletin.schedules
+                        .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                        .slice(0, 2)
+                        .map((schedule, index) => (
                         <div key={index} className="text-sm text-gray-600">
                           <span className="font-medium">{schedule.title}</span>
                           <span className="ml-2">
@@ -382,7 +385,9 @@ export const BulletinsView: React.FC = () => {
                 </h3>
 
                 <div className="space-y-4">
-                  {selectedBulletin.schedules.map((schedule, index) => {
+                  {selectedBulletin.schedules
+                    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                    .map((schedule, index) => {
                     const activityEntries = entriesFromScheduledActivities((schedule as any).scheduledActivities ?? (schedule as any).activityDetails ?? {});
                     const roleAssignments = normalizeRoleAssignments((schedule as any).roleAssignment ?? (schedule as any).roles ?? []);
                     const activityDetails = normalizeActivityDetails((schedule as any).activityDetails ?? (schedule as any).scheduledActivities ?? {});

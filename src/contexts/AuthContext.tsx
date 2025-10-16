@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { User, LoginRequest } from '../types/User';
 import { authService } from '../services/authService';
 
@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  // tokenMemo: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,13 +29,22 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // const [accessToken, setAccessToken] = useState<string | null>(null);
+
+
+  // const tokenMemo = useMemo(
+  //   () => ({ accessToken, setAccessToken }),
+  //   [accessToken]
+  // );
+  
 
   useEffect(() => {
     const initAuth = async () => {
       try {
         if (authService.isAuthenticated() && !authService.isExpired()) {
           const storedUser = authService.getStoredUser();
-          if (storedUser) {
+          const token = localStorage.getItem('authToken');
+          if (storedUser && token) {
             setUser(storedUser);
             // Optionally refresh user data from server
             try {
@@ -45,8 +55,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               console.warn('Failed to refresh user data:', error);
             }
           }
-        } else {
-          logout();
         }
       } catch (error) {
         console.error('Auth initialization failed:', error);
@@ -65,6 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const loginResponse = await authService.login(credentials);
       authService.storeAuthData(loginResponse);
       setUser(loginResponse.user);
+      // setAccessToken(loginResponse.token);
       
       // Redirect based on user role after successful login
       if (loginResponse.user.role === 'USER') {
@@ -82,10 +91,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.logout();
       setUser(null);
+      // setAccessToken(null);
     } catch (error) {
       console.error('Logout failed:', error);
       // Still clear local state even if server request fails
       setUser(null);
+      // setAccessToken(null);
     } finally {
       setIsLoading(false);
     }
@@ -108,6 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     refreshUser,
+    // tokenMemo,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

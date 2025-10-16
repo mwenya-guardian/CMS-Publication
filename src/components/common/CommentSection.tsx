@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, MessageCircle } from 'lucide-react';
 import { ReactionResponse } from '../../types/Reaction';
+import { userService } from '../../services/userService';
 
 interface CommentSectionProps {
   className?: string;
@@ -17,6 +18,35 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 }) => {
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [userNames, setUserNames] = useState<Record<string, string>>({});
+
+  // Fetch user names for comments
+  useEffect(() => {
+    const fetchUserNames = async () => {
+      const uniqueUserIds = [...new Set(comments.map(comment => comment.userId))];
+      const namePromises = uniqueUserIds.map(async (userId) => {
+        try {
+          const fullName = await userService.getFullName(userId);
+          return { userId, fullName };
+        } catch (error) {
+          console.error(`Failed to fetch name for user ${userId}:`, error);
+          return { userId, fullName: 'Unknown User' };
+        }
+      });
+
+      const results = await Promise.all(namePromises);
+      const nameMap = results.reduce((acc, { userId, fullName }) => {
+        acc[userId] = fullName;
+        return acc;
+      }, {} as Record<string, string>);
+
+      setUserNames(nameMap);
+    };
+
+    if (comments.length > 0) {
+      fetchUserNames();
+    }
+  }, [comments]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +57,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   return (
-    <div className={`border-t border-gray-200 pt-4 ${className}`}>
+    <div className={` grid grid-cols-1 border-t border-gray-200 pt-4 ${className}`}>
       {/* Comment toggle button */}
       <button
         onClick={() => setShowComments(!showComments)}
@@ -41,7 +71,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
       {/* Comments section */}
       {showComments && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-4 col-span-1">
           {/* Add comment form */}
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input
@@ -62,27 +92,34 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           </form>
 
           {/* Comments list */}
-          <div className="space-y-3">
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex space-x-3">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-gray-600">
-                    {comment.userName?.charAt(0) || 'U'}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="bg-gray-50 rounded-lg px-3 py-2">
-                    <p className="text-sm font-medium text-gray-900">
-                      {comment.userName || 'Anonymous'}
-                    </p>
-                    <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(comment.createdAt).toLocaleDateString()}
-                    </p>
+          <div className="space-y-3 col-span-1 max-h-[300px] overflow-y-auto max-w-[500px] scrollbar-hide">
+            {comments
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .map((comment) => {
+              const displayName = userNames[comment.userId] || comment.userName || 'Loading...';
+              const initials = displayName.split(' ').map(name => name.charAt(0)).join('').toUpperCase() || 'U';
+              
+              return (
+                <div key={comment.id} className="flex space-x-3">
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-600">
+                      {initials}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-gray-50 rounded-lg px-3 py-2">
+                      <p className="text-sm font-medium text-gray-900">
+                        {displayName}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

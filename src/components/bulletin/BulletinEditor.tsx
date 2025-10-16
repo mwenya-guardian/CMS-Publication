@@ -110,6 +110,9 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
 
   // ---------- Initialize formData ----------
   useEffect(() => {
+    // Clear all modal states when bulletin changes
+    clearAllModalStates();
+    
     if (bulletin) {
       // Normalize schedules' activities into Maps for stable editing in the UI
       const normalizedSchedules = (bulletin.schedules || []).map(s => normalizeSchedule(s));
@@ -176,6 +179,27 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
 
     // announcements and onDutyList are left as-is (they should already be serializable)
     await onSave(payload);
+    
+    // Clear all modal states after successful save
+    clearAllModalStates();
+  };
+
+  // ---------- Helper functions ----------
+  const clearAllModalStates = () => {
+    // Close all modals
+    setIsScheduleModalOpen(false);
+    setIsAnnouncementModalOpen(false);
+    setIsOnDutyModalOpen(false);
+    
+    // Clear selected items
+    setSelectedSchedule(undefined);
+    setSelectedAnnouncement(undefined);
+    setSelectedOnDuty(undefined);
+    
+    // Clear selected indices
+    setSelectedScheduleIndex(undefined);
+    setSelectedAnnouncementIndex(undefined);
+    setSelectedOnDutyIndex(undefined);
   };
 
   // ---------- Field handlers ----------
@@ -199,7 +223,13 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
 
   // ---------- Schedule handlers ----------
   const handleAddSchedule = () => {
-    setSelectedSchedule(undefined);
+    setSelectedSchedule(normalizeSchedule({
+      title: '',
+      startTime: '',
+      endTime: '',
+      scheduledDate: formData.bulletinDate || new Date().toISOString().split('T')[0],
+      scheduledActivities: new Map<string, string>(),
+    }));
     setSelectedScheduleIndex(undefined);
     setIsScheduleModalOpen(true);
   };
@@ -289,6 +319,12 @@ export const BulletinEditor: React.FC<BulletinEditorProps> = ({
   const handleAddOnDuty = () => {
     setSelectedOnDuty(undefined);
     setSelectedOnDutyIndex(undefined);
+    setSelectedOnDuty({
+      role: '',
+      activity: '',
+      participates: [],
+      date: formData.bulletinDate || new Date().toISOString().split('T')[0]
+    });
     setIsOnDutyModalOpen(true);
   };
 

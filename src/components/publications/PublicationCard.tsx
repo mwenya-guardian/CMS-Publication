@@ -78,8 +78,8 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
               </div>
               {isAdmin && (
                 <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit}></Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2}></Button>
+                  <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit}></Button>
+                  <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2}></Button>
                 </div>
               )}
             </div>
@@ -107,8 +107,8 @@ export const PublicationCard: React.FC<PublicationCardProps> = ({
           </h3>
           {isAdmin && (
             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit({} as React.MouseEvent)} icon={Edit} />
-              <Button variant="ghost" size="sm" onClick={() => handleDelete({} as React.MouseEvent)} icon={Trash2} />
+              <Button variant="ghost" size="sm" onClick={handleEdit} icon={Edit} />
+              <Button variant="ghost" size="sm" onClick={handleDelete} icon={Trash2} />
             </div>
           )}
         </div>

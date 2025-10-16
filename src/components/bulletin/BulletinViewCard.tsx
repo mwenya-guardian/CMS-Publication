@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, Clock, Edit, Trash2, Eye, Download, Send, FileText, User } from 'lucide-react';
+import { Calendar, Clock, Download, User } from 'lucide-react';
 import { ChurchBulletin } from '../../types/ChurchBulletin';
 import { dateUtils } from '../../utils/dateUtils';
 import { Button } from '../common/Button';
@@ -87,7 +87,9 @@ export const BulletinViewCard: React.FC<BulletinCardProps> = ({
             </h3>
 
             <div className="space-y-4">
-              {bulletin.schedules.map((schedule, index) => {
+              {bulletin.schedules
+                .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                .map((schedule, index) => {
                 const activityEntries = ((schedule as any).scheduledActivities ?? (schedule as any).activityDetails ?? {});
                 const roleAssignments = ((schedule as any).roleAssignment ?? (schedule as any).roles ?? []);
                 const activityDetails = ((schedule as any).activityDetails ?? (schedule as any).scheduledActivities ?? {});

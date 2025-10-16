@@ -14,9 +14,11 @@ import {
   HandHeart,
   UserCog,
   Church,
-  Clock,
   AudioLines,
-  Rss
+  Rss,
+  AlarmClockCheck,
+  Repeat2,
+  Brain
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
@@ -26,6 +28,7 @@ let navigation = [
   { name: 'Publications', href: '/admin/publications', icon: FileText },
   { name: 'Events', href: '/admin/events', icon: Calendar },
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
+  { name: 'Posts', href: '/admin/posts', icon: AudioLines },
 ];
 
 
@@ -49,10 +52,11 @@ export const AdminLayout: React.FC = () => {
         { name: 'Quotes', href: '/admin/quotes', icon: Quote },   
         { name: 'Posts', href: '/admin/posts', icon: AudioLines },
         { name: 'Bulletins', href: '/admin/bulletins', icon: BookOpen },
-        { name: 'Schedules', href: '/admin/schedules', icon: Clock },
+        { name: 'Schedules', href: '/admin/schedules', icon: AlarmClockCheck},
         { name: 'Members', href: '/admin/members', icon: User },
         { name: 'Users', href: '/admin/users', icon: UserCog },
         { name: 'Giving', href: '/admin/giving', icon: HandHeart },
+        { name: 'AI Analysis', href: '/admin/analysis', icon: Brain },
         // { name: 'Settings', href: '/admin/settings', icon: Settings },
         { name: 'Church', href: '/admin/church-details', icon: Church },];
     }
@@ -139,8 +143,8 @@ export const AdminLayout: React.FC = () => {
                     to="/user"
                     className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
                   >
-                    <User className="mr-3 h-4 w-4" />
-                    User Dashboard
+                    <Repeat2 className="mr-3 h-4 w-4" />
+                    User's View
                   </Link>
                   <Button
                     variant="ghost"
@@ -201,8 +205,8 @@ export const AdminLayout: React.FC = () => {
                 to="/user"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
               >
-                <User className="mr-3 h-4 w-4" />
-                User Dashboard
+                <Repeat2 className="mr-3 h-4 w-4" />
+                User's View
               </Link>
               <Button
                 variant="ghost"

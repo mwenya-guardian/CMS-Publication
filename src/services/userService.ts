@@ -1,15 +1,7 @@
 // src/services/userService.ts
 import api from './api';
-import { User, UserRequest, UpdateUserRequest } from '../types/User';
+import { User, UserRequest, UpdateUserRequest, UserRegistrationRequest} from '../types/User';
 import { ApiResponse, PaginatedResponse, FilterOptions } from '../types/Common';
-
-export interface UserRegistrationRequest {
-  email: string;
-  firstname: string;
-  lastname: string;
-  password: string;
-  dob?: string;
-}
 
 
 export const userService = {
@@ -30,6 +22,11 @@ export const userService = {
     const response = await api.get<ApiResponse<User>>(`/users/${id}`);
     return response.data.data;
   },
+
+  async getFullName(id: string): Promise<string> {
+    const response = await api.get<ApiResponse<string>>(`/users/${id}/fullname`);
+    return response.data.data;
+  },
   async verifyUser(email:string, token:string): Promise<ApiResponse<boolean>> {
     const response = await api.put<ApiResponse<boolean>>(`/users/verify?token=${token}&&email=${email}`);
       return response.data;
@@ -48,8 +45,16 @@ export const userService = {
     const response = await api.put<ApiResponse<User>>(`/users/${id}`, rest);
     return response.data.data;
   },
+  async updateSelf(payload: UpdateUserRequest): Promise<User> {
+    const response = await api.put<ApiResponse<User>>(`/users/me/update`, payload);
+    return response.data.data;
+  },
   async delete(id: string): Promise<void> {
     await api.delete(`/users/${id}`);
+  },
+  async resetPassword(email: string): Promise<User> {
+    const response = await api.put<ApiResponse<User>>(`/users/reset-password?email=${email}`);
+    return response.data.data;
   }
 };
 

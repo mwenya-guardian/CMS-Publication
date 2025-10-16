@@ -132,7 +132,10 @@ export const BulletinCard: React.FC<BulletinCardProps> = ({
                       Services ({bulletin.schedules.length})
                     </h5>
                     <div className="space-y-1">
-                      {bulletin.schedules.slice(0, 2).map((schedule, index) => (
+                      {bulletin.schedules
+                        .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                        .slice(0, 2)
+                        .map((schedule, index) => (
                         <div key={index} className="text-sm text-gray-600">
                           <span className="font-medium">{schedule.title}</span>
                           <span className="ml-2">

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Modal } from '../../components/common/Modal';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -10,6 +11,7 @@ import { User } from '../../types/User';
 import { LayoutType, FilterOptions } from '../../types/Common';
 
 export const UsersPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -22,8 +24,14 @@ export const UsersPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Initialize filters from URL search params
+    const searchQuery = searchParams.get('search');
+    if (searchQuery) {
+      setFilters(prev => ({ ...prev, search: searchQuery }));
+      setIsFiltersOpen(true); // Open filters panel if there's a search query
+    }
     fetchUsers();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     applyFilters();
@@ -46,13 +54,22 @@ export const UsersPage: React.FC = () => {
     console.log(`Users Initial: ${users}`);
     let list = [...users];
 
-    // text search across name/email
+    // text search across name/email (prioritize email for exact matches)
     if (filters.search) {
       const q = String(filters.search).toLowerCase().trim();
-      list = list.filter(u =>
-        `${u.firstname ?? ''} ${u.lastname ?? ''}`.toLowerCase().includes(q) ||
-        (u.email ?? '').toLowerCase().includes(q)
-      );
+      list = list.filter(u => {
+        const email = (u.email ?? '').toLowerCase();
+        const fullName = `${u.firstname ?? ''} ${u.lastname ?? ''}`.toLowerCase();
+        
+        // Exact email match gets priority
+        if (email === q) return true;
+        
+        // Then partial email match
+        if (email.includes(q)) return true;
+        
+        // Finally name match
+        return fullName.includes(q);
+      });
     }
 
     // role filter
@@ -106,7 +123,11 @@ export const UsersPage: React.FC = () => {
     }
   };
 
-  const handleClearFilters = () => setFilters({});
+  const handleClearFilters = () => {
+    setFilters({});
+    // Clear URL search params when filters are cleared
+    setSearchParams({});
+  };
 
   const hasActiveFilters = Object.keys(filters).some(key => filters[key as keyof FilterOptions] !== undefined && filters[key as keyof FilterOptions] !== '');
 
@@ -147,7 +168,17 @@ export const UsersPage: React.FC = () => {
                 type="text"
                 placeholder="Search users by name or email..."
                 value={String(filters.search ?? '')}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setFilters(prev => ({ ...prev, search: newValue }));
+                  
+                  // Update URL search params when search changes
+                  if (newValue.trim()) {
+                    setSearchParams({ search: newValue });
+                  } else {
+                    setSearchParams({});
+                  }
+                }}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
               />
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ReactionWrapper } from '../common/ReactionWrapper';
 import { Post } from '../../types/Post';
-import { VideoPlayer } from 'react-video-audio-player';
+// import { VideoPlayer } from 'react-video-audio-player';
 import { mediaService } from '../../services/mediaService';
 
 interface PostCardProps {
@@ -13,6 +13,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
   const [videoBlob, setVideoBlob] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -45,7 +46,18 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
   // Load image with authentication
   useEffect(() => {
     if (post.type === 'IMAGE' && post.id && !imageUrl) {
-      setImageUrl(mediaService.getImageUrl(post.id));
+      setIsLoadingImage(true);
+      mediaService.getImageAsBlobUrl(post.id)
+        .then(blobUrl => {
+          setImageUrl(blobUrl);
+        })
+        .catch(error => {
+          console.error('Failed to load image:', error);
+          setImageUrl(null);
+        })
+        .finally(() => {
+          setIsLoadingImage(false);
+        });
     }
   }, [post.type, post.id, imageUrl]);
 
@@ -54,6 +66,9 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
     return () => {
       if (videoBlob && videoBlob.startsWith('blob:')) {
         URL.revokeObjectURL(videoBlob);
+      }
+      if (imageUrl && imageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imageUrl);
       }
     };
   }, [videoBlob]);
@@ -104,7 +119,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
                   />
                 ) : (
                   <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <div className="text-gray-500">Loading image...</div>
+                    <div className="text-gray-500">{isLoadingImage ? 'Loading image...' : 'Failed to load image'}</div>
                   </div>
                 )}
               </div>
@@ -115,10 +130,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReactionChange }) =>
                     <div className="text-gray-500">Loading video...</div>
                   </div>
                 ) : videoBlob ? (
-                  <VideoPlayer
+                  <video
                     src={videoBlob}
                     controls
-                    className="w-full h-auto rounded-lg max-h-96 min-h-64"
+                    className="w-full h-auto rounded-lg max-h-96"
                   />
                 ) : (
                   <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
