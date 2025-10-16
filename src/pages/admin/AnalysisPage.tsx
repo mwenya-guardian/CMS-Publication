@@ -46,6 +46,7 @@ export const AnalysisPage: React.FC = () => {
   
   // Jobs data
   const [jobs, setJobs] = useState<AnalysisJob[]>([]);
+  const [jobsPage, setJobsPage] = useState(1);
   
   // Alerts data
   const [alerts, setAlerts] = useState<AnalysisAlert[]>([]);
@@ -109,7 +110,7 @@ export const AnalysisPage: React.FC = () => {
 
   const loadFlaggedComments = async () => {
     const filters = {
-      entityType: entityTypeFilter || undefined,
+      entityType: entityTypeFilter.includes('All')? undefined: entityTypeFilter,
       search: searchTerm || undefined
     };
     
@@ -342,21 +343,14 @@ export const AnalysisPage: React.FC = () => {
   const renderFlaggedComments = () => (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-64">
-            <Input
-              placeholder="Search comments..."
-              value={searchTerm}
-              onChange={setSearchTerm}
-              icon={Search}
-            />
-          </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center justify-start">
+        <h1 className='font-semibold'>Comments</h1>
+        <div className="flex flex-wrap gap-4 ml-auto">
           <Select
             value={entityTypeFilter}
             onChange={setEntityTypeFilter}
             options={[
-              { value: '', label: 'All Types' },
+              { value: 'All', label: 'All Types' },
               { value: 'POST', label: 'Posts' },
               { value: 'EVENT', label: 'Events' },
               { value: 'QUOTE', label: 'Quotes' },
@@ -364,11 +358,20 @@ export const AnalysisPage: React.FC = () => {
             ]}
             className="w-40"
           />
-          <Button onClick={loadFlaggedComments} icon={Filter} variant="outline">
-            Apply Filters
+          <Button onClick={loadFlaggedComments} icon={Filter} variant="ghost">
+            Apply
           </Button>
         </div>
       </div>
+
+      {/* Top Pagination (same style as alerts) */}
+      {flaggedTotal > pageSize && (
+        <Pagination
+          currentPage={flaggedPage}
+          totalPages={Math.ceil(flaggedTotal / pageSize)}
+          onPageChange={setFlaggedPage}
+        />
+      )}
 
       {/* Flagged Comments List */}
       <div className="grid gap-4">
@@ -423,71 +426,87 @@ export const AnalysisPage: React.FC = () => {
     </div>
   );
 
-  const renderJobs = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Analysis Jobs</h3>
-            <Button onClick={loadJobs} icon={RefreshCw} variant="outline" size="sm">
-              Refresh
-            </Button>
+  const renderJobs = () => {
+    const totalJobs = jobs.length;
+    const startIndex = (jobsPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedJobs = jobs.slice(startIndex, endIndex);
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Analysis Jobs</h3>
+              <Button onClick={loadJobs} icon={RefreshCw} variant="outline" size="sm">
+                Refresh
+              </Button>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Job ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Entity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Progress
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Submitted
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {paginatedJobs.map((job) => (
+                  <tr key={job.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {job.id.substring(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {job.entityType} - {job.entityId.substring(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        job.status === 'SUCCESS' ? 'bg-green-100 text-green-700' :
+                        job.status === 'FAILED' ? 'bg-red-100 text-red-700' :
+                        job.status === 'RUNNING' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {job.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {job.processedComments} / {job.totalComments}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {dateUtils.formatDate(job.submittedAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Job ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Entity
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Progress
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Submitted
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {jobs.map((job) => (
-                <tr key={job.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {job.id.substring(0, 8)}...
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {job.entityType} - {job.entityId.substring(0, 8)}...
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      job.status === 'SUCCESS' ? 'bg-green-100 text-green-700' :
-                      job.status === 'FAILED' ? 'bg-red-100 text-red-700' :
-                      job.status === 'RUNNING' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {job.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {job.processedComments} / {job.totalComments}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {dateUtils.formatDate(job.submittedAt)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+        {/* Pagination */}
+        {totalJobs > pageSize && (
+          <Pagination
+            currentPage={jobsPage}
+            totalPages={Math.ceil(totalJobs / pageSize)}
+            onPageChange={setJobsPage}
+          />
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderAlerts = () => (
     <div className="space-y-6">

@@ -15,6 +15,7 @@ export const SettingsPage: React.FC = () => {
     lastname: user?.lastname || '',
     email: user?.email || '',
     dob: user?.dob || '',
+    password: ''
   });
   const [toAdminLink, setToAdminLink] = useState<any>(null);
 useEffect(()=>{
@@ -41,9 +42,20 @@ useEffect(()=>{
     
     setIsLoading(true);
     try {
-      await userService.update({ id: user.id, ...formData });
+      const userRequest: any = {
+        id: user.id,
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        dob: formData.dob || undefined
+      };
+      if (formData.password && formData.password.trim() !== '') {
+        userRequest.password = formData.password.trim();
+      }
+
+      await userService.updateSelf(userRequest);
       await refreshUser();
       setIsEditing(false);
+      setFormData(prev => ({ ...prev, password: '' }));
     } catch (error) {
       console.error('Failed to update user:', error);
     } finally {
@@ -57,6 +69,7 @@ useEffect(()=>{
       lastname: user?.lastname || '',
       email: user?.email || '',
       dob: user?.dob || '',
+      password: ''
     });
     console.log(`Role: ${user?.role}`);
     setIsEditing(false);
@@ -162,10 +175,25 @@ useEffect(()=>{
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                disabled={!isEditing}
+                disabled={true}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password <span className="text-gray-400 text-xs">(leave blank to keep current)</span>
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              placeholder="Enter new password (optional)"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            />
+          </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

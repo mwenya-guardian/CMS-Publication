@@ -28,6 +28,7 @@ let navigation = [
   { name: 'Publications', href: '/admin/publications', icon: FileText },
   { name: 'Events', href: '/admin/events', icon: Calendar },
   { name: 'Quotes', href: '/admin/quotes', icon: Quote },
+  { name: 'Posts', href: '/admin/posts', icon: AudioLines },
 ];
 
 

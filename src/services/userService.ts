@@ -45,6 +45,10 @@ export const userService = {
     const response = await api.put<ApiResponse<User>>(`/users/${id}`, rest);
     return response.data.data;
   },
+  async updateSelf(payload: UpdateUserRequest): Promise<User> {
+    const response = await api.put<ApiResponse<User>>(`/users/me/update`, payload);
+    return response.data.data;
+  },
   async delete(id: string): Promise<void> {
     await api.delete(`/users/${id}`);
   },

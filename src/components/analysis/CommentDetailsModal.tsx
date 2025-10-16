@@ -276,7 +276,7 @@ export const CommentDetailsModal: React.FC<CommentDetailsModalProps> = ({
             </div>
 
             {/* Related Content */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            {/* <div className="bg-white border border-gray-200 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 Related {details.entity.type}
               </h3>
@@ -295,7 +295,7 @@ export const CommentDetailsModal: React.FC<CommentDetailsModalProps> = ({
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
 
             {/* Technical Details */}
             <div className="bg-gray-50 rounded-lg p-4">

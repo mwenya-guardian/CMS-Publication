@@ -343,17 +343,20 @@ export const SchedulesPage: React.FC = () => {
     try {
       setRunningAnalysisId(id);
       await analysisScheduleService.runNow(id);
-    } catch (e) {
-      console.error(e);
-      setAnalysisError('Failed to trigger analysis schedule');
-    } finally {
       // Simulate async kickoff: stop loading after a short delay and show notice
       setTimeout(() => {
         setRunningAnalysisId(null);
-        setAnalysisRunNotice('Analysis is running. Results will be ready soon.');
-      }, 1500);
-    }
-  };
+        setAnalysisRunNotice('Analysis is running. Results will be ready soon. Check the job list!');
+        setRunningAnalysisId(null);
+      }, 5000);
+          
+    } catch (e) {
+      console.error(e);
+      // if(e)
+      setAnalysisError('Failed to trigger analysis schedule');
+      setRunningAnalysisId(null);
+    };
+  }
 
   const toggleAnalysisEnabled = async (id: string, enabled: boolean) => {
     try {
